@@ -1,0 +1,56 @@
+[versions]
+spring               = "7.0.6"
+spring-modulith      = "2.0.0"
+reactor-netty        = "1.2.5"
+telegram-bot         = "6.8.0"
+jackson              = "2.18.3"
+slf4j                = "2.0.17"
+logback              = "1.5.18"
+junit                = "5.12.0"
+testcontainers       = "2.0.2"
+shadow               = "8.3.6"
+
+[libraries]
+# Spring Core
+spring-context         = { module = "org.springframework:spring-context",          version.ref = "spring" }
+spring-webflux         = { module = "org.springframework:spring-webflux",          version.ref = "spring" }
+spring-tx              = { module = "org.springframework:spring-tx",               version.ref = "spring" }
+spring-messaging       = { module = "org.springframework:spring-messaging",        version.ref = "spring" }
+
+# Spring Modulith
+spring-modulith-core   = { module = "org.springframework.modulith:spring-modulith-core",        version.ref = "spring-modulith" }
+spring-modulith-events = { module = "org.springframework.modulith:spring-modulith-events-core", version.ref = "spring-modulith" }
+spring-modulith-test   = { module = "org.springframework.modulith:spring-modulith-test",        version.ref = "spring-modulith" }
+
+# Spring Kafka TODO Add kafka
+
+# MongoDB Reactive Driver TODO Add MongoDB
+
+# Reactor Netty embedded HTTP server
+reactor-netty-http     = { module = "io.projectreactor.netty:reactor-netty-http",  version.ref = "reactor-netty" }
+
+# Telegram Bot
+telegrambots = { group = "org.telegram", name = "telegrambots", version.ref = "telegram-bot" }
+telegrambots-meta = { group = "org.telegram", name = "telegrambots-meta", version.ref = "telegram-bot" }
+
+# Jackson
+jackson-databind           = { module = "com.fasterxml.jackson.core:jackson-databind",                     version.ref = "jackson" }
+jackson-datatype-jsr310    = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310",          version.ref = "jackson" }
+jackson-parameter-names    = { module = "com.fasterxml.jackson.module:jackson-module-parameter-names",     version.ref = "jackson" }
+
+# Logging
+slf4j-api              = { module = "org.slf4j:slf4j-api",            version.ref = "slf4j" }
+logback-classic        = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+# Testing
+junit-jupiter          = { module = "org.junit.jupiter:junit-jupiter",      version.ref = "junit" }
+spring-test            = { module = "org.springframework:spring-test",      version.ref = "spring" }
+testcontainers-junit   = { module = "org.testcontainers:junit-jupiter",     version.ref = "testcontainers" }
+testcontainers-mongodb = { module = "org.testcontainers:mongodb",           version.ref = "testcontainers" }
+testcontainers-kafka   = { module = "org.testcontainers:kafka",             version.ref = "testcontainers" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+
+[bundles]
+telegram-bot = ["telegrambots", "telegrambots-meta"]

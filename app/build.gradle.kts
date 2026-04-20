@@ -1,0 +1,72 @@
+plugins {
+    application
+    alias(libs.plugins.shadow)
+}
+
+repositories {
+    mavenCentral()
+    maven { url = uri("https://repo.spring.io/milestone") }
+    maven { url = uri("https://repo.spring.io/snapshot") }
+    maven { url = uri("https://jitpack.io") }
+}
+
+dependencies {
+    // Spring Core + WebFlux
+    implementation(libs.spring.context)
+    implementation(libs.spring.webflux)
+    implementation(libs.spring.tx)
+    implementation(libs.spring.messaging)
+
+    // Spring Modulith (module organization + event infrastructure)
+    implementation(libs.spring.modulith.core)
+    implementation(libs.spring.modulith.events)
+
+    // Reactor Netty (embedded HTTP server - replaces Spring Boot's autoconfigured Netty)
+    implementation(libs.reactor.netty.http)
+
+    // Spring Data MongoDB Reactive TODO Add MongoDB
+
+    // Spring Kafka TODO Add Kafka
+
+    // Telegram Bot Client
+    implementation(libs.bundles.telegram.bot)
+
+    // Jackson
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.jackson.parameter.names)
+
+    // Logging
+    implementation(libs.slf4j.api)
+    runtimeOnly(libs.logback.classic)
+
+    // Testing
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.spring.test)
+    testImplementation(libs.spring.modulith.test)
+    testImplementation(libs.testcontainers.junit)
+    testImplementation(libs.testcontainers.mongodb)
+    testImplementation(libs.testcontainers.kafka)
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+application {
+    mainClass = "ru.spbstu.Application"
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+tasks.shadowJar {
+    archiveClassifier = ""
+    manifest {
+        attributes["Main-Class"] = "ru.spbstu.Application"
+    }
+    mergeServiceFiles()
+}
