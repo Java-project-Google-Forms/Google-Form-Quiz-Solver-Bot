@@ -70,3 +70,8 @@ tasks.shadowJar {
     }
     mergeServiceFiles()
 }
+
+tasks.register<JavaExec>("runLLM") {
+    mainClass = "ru.spbstu.llmsolver.test.LlmOnlyTest"
+    classpath = sourceSets.main.get().runtimeClasspath
+}
