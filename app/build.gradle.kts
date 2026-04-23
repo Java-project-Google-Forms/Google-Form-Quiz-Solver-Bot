@@ -71,7 +71,9 @@ tasks.shadowJar {
     mergeServiceFiles()
 }
 
-tasks.register<JavaExec>("runLLM") {
-    mainClass = "ru.spbstu.llmsolver.test.LlmOnlyTest"
+// Задача для запуска LLM-теста отдельно от основного приложения
+tasks.register<JavaExec>("runLlmTest") {
+    group = "application"
+    mainClass = "ru.spbstu.llmsolver.test.LlmTestRunner"
     classpath = sourceSets.main.get().runtimeClasspath
 }
