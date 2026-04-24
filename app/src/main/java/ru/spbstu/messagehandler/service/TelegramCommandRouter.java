@@ -13,11 +13,13 @@ import static ru.spbstu.messagehandler.handler.MessageHandler.FORM_LINK_REGEX;
  */
 @Component
 public class TelegramCommandRouter {
+    // TODO Change for asynchronous use, methods should return completable future.
     private final FormSolvingService formSolving;
     private final HistoryService history;
     private final RequestStatusService requestStatus;
 
-    public TelegramCommandRouter(FormSolvingService formSolving, HistoryService history, RequestStatusService requestStatus) {
+    public TelegramCommandRouter(FormSolvingService formSolving, HistoryService history,
+                                 RequestStatusService requestStatus) {
         this.formSolving = formSolving;
         this.history = history;
         this.requestStatus = requestStatus;

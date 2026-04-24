@@ -1,30 +1,17 @@
 package ru.spbstu;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 public class Application {
-
     public static void main(String[] args) {
-//        var context = new AnnotationConfigApplicationContext(AppConfig.class);
-//
-//        String host = context.getEnvironment().getProperty("server.host", "0.0.0.0");
-//        int port = Integer.parseInt(context.getEnvironment().getProperty("server.port", "8080"));
-//
-//        HttpHandler httpHandler = WebHttpHandlerBuilder.applicationContext(context).build();
-//        ReactorHttpHandlerAdapter adapter = new ReactorHttpHandlerAdapter(httpHandler);
-//
-//        HttpServer.create()
-//                .host(host)
-//                .port(port)
-//                .handle(adapter)
-//                .bindNow()
-//                .onDispose()
-//                .block();
-
-
         try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class)) {
             System.out.println("Application started.");
+            // Можно получить бин и что-то сделать для теста
+            // var facade = context.getBean(FormSolvingFacade.class);
+            // facade.solve(123L, "https://forms.gle/...").subscribe(System.out::println);
+            Thread.currentThread().join(); // чтобы реактор не завершился сразу
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }

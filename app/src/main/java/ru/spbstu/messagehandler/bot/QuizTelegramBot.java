@@ -10,10 +10,15 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import javax.annotation.PreDestroy;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @Component
 public class QuizTelegramBot extends TelegramLongPollingBot {
 
     private static final Logger log = LoggerFactory.getLogger(QuizTelegramBot.class);
+    private final ExecutorService executor = Executors.newFixedThreadPool(10);
 
     private final BotConfig botConfig;
     private final MessageHandler messageHandler;
@@ -36,13 +41,20 @@ public class QuizTelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            SendMessage response = messageHandler.handle(update.getMessage());
-            try {
-                execute(response);
-                log.debug("Reply sent to chat {}", update.getMessage().getChatId());
-            } catch (TelegramApiException e) {
-                log.error("Failed to send message", e);
-            }
+            executor.submit(() -> {
+                SendMessage response = messageHandler.handle(update.getMessage());
+                try {
+                    execute(response);
+                    log.debug("Reply sent to chat {}", update.getMessage().getChatId());
+                } catch (TelegramApiException e) {
+                    log.error("Failed to send message", e);
+                }
+            });
         }
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        executor.shutdown();
     }
 }

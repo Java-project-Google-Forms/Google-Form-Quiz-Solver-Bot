@@ -24,9 +24,13 @@ dependencies {
     // Reactor Netty (embedded HTTP server - replaces Spring Boot's autoconfigured Netty)
     implementation(libs.reactor.netty.http)
 
-    // Spring Data MongoDB Reactive TODO Add MongoDB
 
-    // Spring Kafka TODO Add Kafka
+
+    // Spring Data MongoDB Reactive TODO
+
+    // Spring Kafka
+    implementation(libs.spring.kafka)
+    implementation(libs.reactor.kafka)
 
     // Telegram Bot Client
     implementation(libs.bundles.telegram.bot)
@@ -43,10 +47,10 @@ dependencies {
     // Testing
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.spring.test)
-    testImplementation(libs.spring.modulith.test)
-    testImplementation(libs.testcontainers.junit)
-    testImplementation(libs.testcontainers.mongodb)
-    testImplementation(libs.testcontainers.kafka)
+    testRuntimeOnly(libs.junit.platform.launcher)
+
+    // Json parsing
+    implementation(libs.jsoup)
 }
 
 java {
@@ -70,3 +74,5 @@ tasks.shadowJar {
     }
     mergeServiceFiles()
 }
+
+
