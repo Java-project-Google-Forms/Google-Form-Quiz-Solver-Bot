@@ -105,20 +105,19 @@ public class TelegramCommandRouter {
      * @param argument аргумент после /history (day/week/month/all или пусто)
      * @param chatId   идентификатор чата
      */
-    public String handleHistory(String argument, Long chatId) {
-        // TODO: получить историю из БД
-        List<String> allowedPeriods = Arrays.asList("day", "week", "month", "all");
-        if (argument != null && !argument.isBlank()) {
+     public String handleHistory(String argument, Long chatId) {
+    	List<String> allowedPeriods = Arrays.asList("day", "week", "month", "all");
+    	if (argument != null && !argument.isBlank()) {
             String period = argument.trim().toLowerCase();
             if (allowedPeriods.contains(period)) {
-                return history.getHistory(chatId, argument);
+                return history.getHistory(chatId, period);
             } else {
                 return "❌ Неверный период. Используйте: day, week, month, all";
             }
         } else {
-            return "📜 История за всё время (заглушка)";
+            return history.getHistory(chatId, "week");
         }
-    }
+     }
 
     /**
      * Обработка команды /get_form &lt;formId&gt;

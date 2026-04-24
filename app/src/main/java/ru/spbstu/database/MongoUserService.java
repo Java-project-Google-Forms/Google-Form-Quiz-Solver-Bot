@@ -19,16 +19,17 @@ public class MongoUserService implements UserService {
 
     @Override
     public UserDocument getOrCreateUser(Long chatId, String name) {
-        return userRepository.findByChatId(chatId.toString())
-                .switchIfEmpty(Mono.defer(() -> {
-                    UserDocument user = new UserDocument();
-                    user.setChatId(chatId.toString());
-                    user.setName(name);
-                    user.setHasCurrentRequest(false);
-                    return userRepository.save(user);
-                }))
-                .block();
-    }
+    return userRepository.findByChatId(chatId.toString())
+            .switchIfEmpty(Mono.defer(() -> {
+                UserDocument user = new UserDocument();
+                user.setChatId(chatId.toString());
+                user.setName(name);
+                user.setUserId(Math.abs(chatId.intValue()));
+                user.setHasCurrentRequest(false);
+                return userRepository.save(user);
+            }))
+            .block();
+}
 
     @Override
     public boolean hasActiveRequest(Long chatId) {

@@ -36,6 +36,15 @@ public class MongoHistoryService implements HistoryService {
                     return userRepository.save(newUser);
                 }));
     }
+    private String formatStatus(String status) {
+    return switch (status) {
+        case "PENDING"    -> "⏳ Ожидает";
+        case "PROCESSING" -> "⚙️ В обработке";
+        case "COMPLETED"  -> "✅ Завершен";
+        case "FAILED"     -> "❌ Неудача";
+        default           -> status;
+    	};
+    }
 
     @Override
     public String getHistory(Long chatId, String period) {
@@ -45,12 +54,12 @@ public class MongoHistoryService implements HistoryService {
                     if (history == null || history.isEmpty()) {
                         return "📜 История пуста.";
                     }
-                    Instant from = switch (period.toLowerCase()) {
-                        case "day"   -> Instant.now().minus(1, ChronoUnit.DAYS);
-                        case "week"  -> Instant.now().minus(7, ChronoUnit.DAYS);
-                        case "month" -> Instant.now().minus(30, ChronoUnit.DAYS);
-                        default      -> Instant.EPOCH;
-                    };
+                    Instant from = switch (period.trim().toLowerCase()) {
+    			case "day"   -> Instant.now().minus(1, ChronoUnit.DAYS);
+    			case "month" -> Instant.now().minus(30, ChronoUnit.DAYS);
+    			case "all"   -> Instant.EPOCH;
+    			default      -> Instant.now().minus(7, ChronoUnit.DAYS); // week по умолчанию
+		    };
                     List<HistoryEntryDocument> filtered = history.stream()
                             .filter(e -> e.getSolvedDate() != null && e.getSolvedDate().isAfter(from))
                             .collect(Collectors.toList());
@@ -58,11 +67,12 @@ public class MongoHistoryService implements HistoryService {
                         return "📜 За выбранный период записей нет.";
                     }
                     StringBuilder sb = new StringBuilder("📜 <b>История:</b>\n");
-                    for (HistoryEntryDocument e : filtered) {
-                        sb.append("• formId=").append(e.getFormId())
-                          .append(", статус=").append(e.getStatus())
-                          .append(", дата=").append(e.getSolvedDate()).append("\n");
-                    }
+		    for (HistoryEntryDocument e : filtered) {
+    			sb.append("• requestId=").append(e.getFormId())
+      			  .append(", статус=").append(formatStatus(e.getStatus()))
+      			  .append(", дата=").append(e.getSolvedDate().toString().substring(0, 10))
+      			  .append("\n");
+		    }
                     return sb.toString();
                 })
                 .block();
