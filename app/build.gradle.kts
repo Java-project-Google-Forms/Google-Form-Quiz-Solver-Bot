@@ -1,6 +1,5 @@
 plugins {
     application
-    alias(libs.plugins.shadow)
 }
 
 repositories {
@@ -11,36 +10,25 @@ repositories {
 }
 
 dependencies {
-    // Spring Core + WebFlux
     implementation(libs.spring.context)
     implementation(libs.spring.webflux)
     implementation(libs.spring.tx)
     implementation(libs.spring.messaging)
-
-    // Spring Modulith (module organization + event infrastructure)
     implementation(libs.spring.modulith.core)
     implementation(libs.spring.modulith.events)
-
-    // Reactor Netty (embedded HTTP server - replaces Spring Boot's autoconfigured Netty)
     implementation(libs.reactor.netty.http)
-
-    // Spring Data MongoDB Reactive TODO Add MongoDB
-
-    // Spring Kafka TODO Add Kafka
-
-    // Telegram Bot Client
     implementation(libs.bundles.telegram.bot)
-
-    // Jackson
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.parameter.names)
-
-    // Logging
     implementation(libs.slf4j.api)
+    // Spring Data MongoDB Reactive
+    implementation(libs.mongodb.driver.reactivestreams)
+    implementation(libs.spring.data.mongodb)
+    implementation(libs.mongodb.driver.core)
+    //----------
     runtimeOnly(libs.logback.classic)
-
-    // Testing
+    testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.spring.test)
     testImplementation(libs.spring.modulith.test)
@@ -61,19 +49,4 @@ application {
 
 tasks.test {
     useJUnitPlatform()
-}
-
-tasks.shadowJar {
-    archiveClassifier = ""
-    manifest {
-        attributes["Main-Class"] = "ru.spbstu.Application"
-    }
-    mergeServiceFiles()
-}
-
-// Задача для запуска LLM-теста отдельно от основного приложения
-tasks.register<JavaExec>("runLlmTest") {
-    group = "application"
-    mainClass = "ru.spbstu.llmsolver.test.LlmTestRunner"
-    classpath = sourceSets.main.get().runtimeClasspath
 }

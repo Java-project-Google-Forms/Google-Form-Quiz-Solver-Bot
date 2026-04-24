@@ -5,6 +5,7 @@ import ru.spbstu.messagehandler.service.TelegramCommandRouter;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import ru.spbstu.messagehandler.service.UserService;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,9 +20,11 @@ public class MessageHandler {
                     "[a-zA-Z0-9_-]+)(\\?.*)?$"
     );
     private final TelegramCommandRouter telegramCommandRouter;
+    private final UserService userService;
 
-    public MessageHandler(TelegramCommandRouter telegramCommandRouter) {
+    public MessageHandler(TelegramCommandRouter telegramCommandRouter, UserService userService) {
         this.telegramCommandRouter = telegramCommandRouter;
+        this.userService = userService;
     }
 
 
@@ -29,6 +32,7 @@ public class MessageHandler {
         Long chatId = message.getChatId();
         String text = message.getText();
         String firstName = message.getFrom().getFirstName();
+        userService.getOrCreateUser(chatId, firstName);
 
         String responseText;
 

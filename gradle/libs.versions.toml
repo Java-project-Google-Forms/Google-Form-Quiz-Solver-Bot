@@ -7,8 +7,10 @@ jackson              = "2.18.3"
 slf4j                = "2.0.17"
 logback              = "1.5.18"
 junit                = "5.12.0"
-testcontainers       = "2.0.2"
+testcontainers       = "1.20.4"
 shadow               = "8.3.6"
+mongodb-driver       = "5.6.1"
+spring-data-mongodb  = "5.0.0"
 
 [libraries]
 # Spring Core
@@ -25,6 +27,9 @@ spring-modulith-test   = { module = "org.springframework.modulith:spring-modulit
 # Spring Kafka TODO Add kafka
 
 # MongoDB Reactive Driver TODO Add MongoDB
+mongodb-driver-reactivestreams = { module = "org.mongodb:mongodb-driver-reactivestreams", version.ref = "mongodb-driver" }
+spring-data-mongodb            = { module = "org.springframework.data:spring-data-mongodb", version.ref = "spring-data-mongodb" }
+mongodb-driver-core = { module = "org.mongodb:mongodb-driver-core", version.ref = "mongodb-driver" }
 
 # Reactor Netty embedded HTTP server
 reactor-netty-http     = { module = "io.projectreactor.netty:reactor-netty-http",  version.ref = "reactor-netty" }
@@ -44,6 +49,7 @@ logback-classic        = { module = "ch.qos.logback:logback-classic", version.re
 
 # Testing
 junit-jupiter          = { module = "org.junit.jupiter:junit-jupiter",      version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.12.0" }
 spring-test            = { module = "org.springframework:spring-test",      version.ref = "spring" }
 testcontainers-junit   = { module = "org.testcontainers:junit-jupiter",     version.ref = "testcontainers" }
 testcontainers-mongodb = { module = "org.testcontainers:mongodb",           version.ref = "testcontainers" }
