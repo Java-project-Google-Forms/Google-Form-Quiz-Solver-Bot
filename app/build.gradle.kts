@@ -24,7 +24,7 @@ dependencies {
     // Reactor Netty (embedded HTTP server - replaces Spring Boot's autoconfigured Netty)
     implementation(libs.reactor.netty.http)
 
-
+    // Spring Data MongoDB Reactive TODO Add MongoDB
 
     // Spring Data MongoDB Reactive TODO
 
@@ -75,4 +75,9 @@ tasks.shadowJar {
     mergeServiceFiles()
 }
 
-
+// Задача для запуска LLM-теста отдельно от основного приложения
+tasks.register<JavaExec>("runLlmTest") {
+    group = "application"
+    mainClass = "ru.spbstu.llmsolver.test.LlmTestRunner"
+    classpath = sourceSets.main.get().runtimeClasspath
+}

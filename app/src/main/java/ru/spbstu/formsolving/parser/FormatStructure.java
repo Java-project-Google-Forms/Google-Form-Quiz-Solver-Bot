@@ -73,21 +73,17 @@ public class FormatStructure {
         return switch (type) {
             case TEXT -> "Короткий текст";
             case PARAGRAPH -> "Абзац";
-            case EMAIL -> "Email";
-            case URL -> "Веб-сайт";
             case DATE -> "Дата";
             case TIME -> "Время";
-            case FILE_UPLOAD -> "Загрузка файла";
             case LINEAR_SCALE -> "Линейная шкала";
             case DROP_DOWN -> "Выпадающий список";
             case MULTIPLE_CHOICE -> "Одиночный выбор";
             case CHECKBOX -> "Множественный выбор";
-            case GRID -> "Сетка";
             default -> "Неизвестный тип";
         };
     }
 
-    private static String escapeHtml(String text) {
+    public static String escapeHtml(String text) {
         if (text == null) return "";
         return text.replace("&", "&amp;")
                 .replace("<", "&lt;")

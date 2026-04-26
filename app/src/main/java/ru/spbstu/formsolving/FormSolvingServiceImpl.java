@@ -51,9 +51,7 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
             // Отправляем в Kafka только requestId (неблокирующе)
             kafkaProducer.sendSolveTask(requestId);
 
-            // Отправляем пользователю структуру формы и подтверждение
-            String structureMessage = FormatStructure.formatStructureMessage(structure);
-            resultSender.sendResult(chatId, structureMessage);
+            // Отправляем пользователю подтверждение
             resultSender.sendResult(chatId, "✅ Форма принята в обработку. ID запроса: " + requestId);
             return true;
         } catch (Exception e) {
@@ -93,13 +91,14 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("✅ Результат решения формы \n\n").append(info.structure().getTitle())
+        sb.append("✅ Результат решения формы \n\n").append(FormatStructure.escapeHtml(info.structure().getTitle()))
                 .append(":\n\n");
         int idx = 1;
         for (Question q : info.structure().getQuestions()) {
             String answer = result.answers().getOrDefault(q.getId(), "—");
-            sb.append(idx++).append(". ").append(q.getTitle()).append("\n");
-            sb.append("   ▶ ").append(answer).append("\n\n");
+            sb.append(idx++).append(". ").append(FormatStructure.escapeHtml(q.getTitle())).append(
+                    "\n");
+            sb.append("   ▶ ").append(FormatStructure.escapeHtml(answer)).append("\n\n");
         }
         resultSender.sendResult(info.chatId(), sb.toString());
         log.info("Result sent to user {} for requestId={}", info.chatId(), requestId);

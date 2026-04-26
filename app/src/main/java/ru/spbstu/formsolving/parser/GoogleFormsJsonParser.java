@@ -30,7 +30,10 @@ public class GoogleFormsJsonParser {
         String html = doc.html();
         String jsonString = extractJson(html);
         JsonNode root = objectMapper.readTree(jsonString);
-        return parseFormStructure(root);
+        String title = doc.select("div[role=heading]").first() != null
+                ? Objects.requireNonNull(doc.select("div[role=heading]").first()).text()
+                : "Без названия";
+        return parseFormStructure(root, title);
     }
 
     private String extractJson(String html) {
@@ -41,17 +44,18 @@ public class GoogleFormsJsonParser {
         throw new RuntimeException("FB_PUBLIC_LOAD_DATA_ not found. Form may not be public.");
     }
 
-    private FormStructure parseFormStructure(JsonNode root) {
+    private FormStructure parseFormStructure(JsonNode root, String title) {
         JsonNode questionsArray = root.path(1).path(1);
         if (questionsArray.isMissingNode() || !questionsArray.isArray()) {
             throw new RuntimeException("Invalid form structure");
         }
-        String title = root.path(1).path(0).asText();
+        String description = root.path(1).path(0).asText();
         List<Question> questions = new ArrayList<>();
         for (JsonNode qNode : questionsArray) {
             parseQuestion(qNode).ifPresent(questions::add);
         }
-        return new FormStructure(title, "", questions);
+
+        return new FormStructure(title, description, questions);
     }
 
     private Optional<Question> parseQuestion(JsonNode qNode) {
@@ -104,7 +108,7 @@ public class GoogleFormsJsonParser {
         List<String> options = new ArrayList<>();
         if (optionsRaw.isArray()) {
             for (JsonNode opt : optionsRaw) {
-                if (opt.isArray() && opt.size() > 0) {
+                if (opt.isArray() && !opt.isEmpty()) {
                     String text = opt.get(0).asText();
                     if (!text.isEmpty()) options.add(text);
                 }
@@ -120,14 +124,14 @@ public class GoogleFormsJsonParser {
         List<String> values = new ArrayList<>();
         if (valuesRaw.isArray()) {
             for (JsonNode v : valuesRaw) {
-                if (v.isArray() && v.size() > 0) {
+                if (v.isArray() && !v.isEmpty()) {
                     values.add(v.get(0).asText());
                 }
             }
         }
         if (!values.isEmpty()) {
-            scale.setLow(values.get(0));
-            scale.setHigh(values.get(values.size() - 1));
+            scale.setLow(values.getFirst());
+            scale.setHigh(values.getLast());
             scale.setValues(values);
         }
 
@@ -161,7 +165,7 @@ public class GoogleFormsJsonParser {
                 JsonNode colsRaw = row.path(1);
                 if (colsRaw.isArray()) {
                     for (JsonNode col : colsRaw) {
-                        if (col.isArray() && col.size() > 0) {
+                        if (col.isArray() && !col.isEmpty()) {
                             columns.add(col.get(0).asText());
                         }
                     }
@@ -199,7 +203,7 @@ public class GoogleFormsJsonParser {
     private Question.TimeInfo extractTimeInfo(JsonNode entryData) {
         Question.TimeInfo time = new Question.TimeInfo();
         JsonNode flags = entryData.path(6);
-        if (flags.isArray() && flags.size() >= 1) {
+        if (flags.isArray() && !flags.isEmpty()) {
             time.setDuration(flags.get(0).asInt(0) == 1);
         }
         return time;
@@ -213,7 +217,6 @@ public class GoogleFormsJsonParser {
             case 3: return QuestionType.DROP_DOWN;
             case 4: return QuestionType.CHECKBOX;
             case 5: return QuestionType.LINEAR_SCALE;
-            case 7: return QuestionType.GRID;       // нужно добавить в enum
             case 9: return QuestionType.DATE;
             case 10: return QuestionType.TIME;
             default: return QuestionType.UNSUPPORTED;
