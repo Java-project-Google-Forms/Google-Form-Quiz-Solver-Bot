@@ -33,6 +33,9 @@ public class MessageHandler {
         String responseText;
 
         switch (text) {
+            case "/start":
+                responseText = telegramCommandRouter.handleStart();
+                break;
             case "/help":
                 responseText = telegramCommandRouter.handleHelp();
                 break;

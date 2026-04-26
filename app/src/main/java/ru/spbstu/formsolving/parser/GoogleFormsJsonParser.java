@@ -221,6 +221,8 @@ public class GoogleFormsJsonParser {
     }
 
     public boolean isValid(FormStructure structure) {
-        return structure.getQuestions() != null && !structure.getQuestions().isEmpty();
+        if (structure.getQuestions() == null && structure.getQuestions().isEmpty()) return false;
+        return structure.getQuestions().stream()
+                .anyMatch(q -> q.getType() != QuestionType.UNSUPPORTED);
     }
 }
