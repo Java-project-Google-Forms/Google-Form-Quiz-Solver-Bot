@@ -1,5 +1,6 @@
 package ru.spbstu.llmsolver.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.spbstu.llmsolver.client.LanguageModelClient;
@@ -10,19 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class LLMQuestionSolver {
 
     private final LanguageModelClient llmClient;
     private final PromptBuilder promptBuilder;
     private final AnswerParser answerParser;
-
-    public LLMQuestionSolver(LanguageModelClient llmClient,
-                             PromptBuilder promptBuilder,
-                             AnswerParser answerParser) {
-        this.llmClient = llmClient;
-        this.promptBuilder = promptBuilder;
-        this.answerParser = answerParser;
-    }
 
     public Mono<Map<String, AnswerWithConfidence>> solveQuestions(List<Question> questions) {
         if (questions == null || questions.isEmpty()) {

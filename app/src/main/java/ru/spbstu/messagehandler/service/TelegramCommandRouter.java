@@ -1,5 +1,6 @@
 package ru.spbstu.messagehandler.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
@@ -12,15 +13,34 @@ import static ru.spbstu.messagehandler.handler.MessageHandler.FORM_LINK_REGEX;
  * Координирует вызовы других модулей (MongoDB, Kafka, GigaChat и т.д.)
  */
 @Component
+@RequiredArgsConstructor
 public class TelegramCommandRouter {
     private final FormSolvingService formSolving;
     private final HistoryService history;
     private final RequestStatusService requestStatus;
 
-    public TelegramCommandRouter(FormSolvingService formSolving, HistoryService history, RequestStatusService requestStatus) {
-        this.formSolving = formSolving;
-        this.history = history;
-        this.requestStatus = requestStatus;
+    public String handleStart() {
+        return """
+                Привет! Я бот для автоматического решения Google‑форм.
+                
+                <b>Функциональные возможности</b>
+                
+                Бот принимает ссылки на публичные Google‑формы и возвращает ответы на каждый вопрос, который может обработать.
+                
+                Бот не решает вопросы включающие в себя картинки, видео, загрузку файлов и сеточные типы вопросов.
+                
+                <b>Способы взаимодействия</b>
+                
+                Для инициирования обработки формы отправьте в чат ссылку на форму в одном из следующих форматов:
+                • <code>https://forms.gle/...</code>
+                • <code>https://docs.google.com/forms/d/...</code>
+                либо воспользуйтесь командой <code> /solve &lt;link&gt;</code>.
+                
+                Для вывода всех команд с кратким описанием можете воспользоваться командой <code>/help</code>.
+                
+                <b>Приступим?</b>
+                Можете отправить мне ссылку на публичную Google-форму и я сразу начну работу!
+                """;
     }
 
     /**

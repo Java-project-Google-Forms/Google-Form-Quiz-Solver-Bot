@@ -2,6 +2,7 @@ package ru.spbstu.llmsolver.config;
 
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +11,7 @@ import reactor.netty.http.client.HttpClient;
 import javax.net.ssl.SSLException;
 
 @Configuration
+@Getter
 public class LlmConfig {
 
     @Value("${gigachat.api-key:}")
@@ -39,11 +41,4 @@ public class LlmConfig {
             throw new RuntimeException("Failed to create insecure SSL context", e);
         }
     }
-
-    // getters
-    public String getApiKey() { return apiKey; }
-    public String getTokenUrl() { return tokenUrl; }
-    public String getChatUrl() { return chatUrl; }
-    public int getTimeoutSeconds() { return timeoutSeconds; }
-    public int getMaxAttempts() { return maxAttempts; }
 }

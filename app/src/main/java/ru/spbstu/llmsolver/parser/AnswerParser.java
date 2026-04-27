@@ -2,8 +2,8 @@ package ru.spbstu.llmsolver.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.spbstu.llmsolver.service.LLMQuestionSolver.AnswerWithConfidence;
 import ru.spbstu.llmsolver.service.LLMQuestionSolver.Question;
@@ -11,11 +11,12 @@ import ru.spbstu.llmsolver.service.LLMQuestionSolver.Question;
 import java.util.*;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class AnswerParser {
 
-    private static final Logger log = LoggerFactory.getLogger(AnswerParser.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public Map<String, AnswerWithConfidence> parseAnswers(String llmText, List<Question> questions) {
         String jsonContent = extractJson(llmText);
@@ -62,18 +63,15 @@ public class AnswerParser {
                 }
                 // Replace markers
                 if ("__PERSONAL__".equals(answer)) {
-                    answer = " This question asks for personal data. Please answer manually.";
-                    confidence = 0;
-                } else if ("__SUBJECTIVE__".equals(answer)) {
-                    answer = " This question asks for your personal opinion or rating. Please answer manually.";
+                    answer = " В этом вопросе запрашиваются личные данные. Пожалуйста, ответьте вручную.";
                     confidence = 0;
                 } else if ("UNKNOWN".equals(answer)) {
-                    answer = " Information not available or requires real‑time data.";
+                    answer = " Информация недоступна или требует актуальных данных.";
                     confidence = 0;
                 }
                 result.put(questions.get(i).id(), new AnswerWithConfidence(answer, confidence));
             } else {
-                result.put(questions.get(i).id(), new AnswerWithConfidence(" No answer provided", 0));
+                result.put(questions.get(i).id(), new AnswerWithConfidence(" Ответ не предоставлен.", 0));
             }
         }
         return result;
@@ -84,7 +82,7 @@ public class AnswerParser {
         if (text.contains("__PERSONAL__") || text.contains("__SUBJECTIVE__")) {
             for (Question q : questions) {
                 result.put(q.id(), new AnswerWithConfidence(
-                    "❓ Personal or subjective question – please answer manually.", 0));
+                    " Личные данные – ответьте вручную.", 0));
             }
             return result;
         }
@@ -101,7 +99,7 @@ public class AnswerParser {
             String answer = extractByRegex(block, "Answer:\\s*(.+?)(?=\\nConfidence|$)");
             Integer confidence = extractIntByRegex(block, "Confidence:\\s*(\\d+)%");
             result.put(questions.get(i).id(), new AnswerWithConfidence(
-                    answer != null ? answer : "[Unrecognized]",
+                    answer != null ? answer : "[Не распознано]",
                     confidence != null ? confidence : 0
             ));
         }

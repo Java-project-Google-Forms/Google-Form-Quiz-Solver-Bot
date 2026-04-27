@@ -1,27 +1,27 @@
 package ru.spbstu.messagehandler.bot;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.spbstu.messagehandler.config.BotConfig;
 import ru.spbstu.messagehandler.handler.MessageHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-@Component
-public class QuizTelegramBot extends TelegramLongPollingBot {
+import javax.annotation.PreDestroy;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-    private static final Logger log = LoggerFactory.getLogger(QuizTelegramBot.class);
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class QuizTelegramBot extends TelegramLongPollingBot {
+    private final ExecutorService executor = Executors.newFixedThreadPool(10);
 
     private final BotConfig botConfig;
     private final MessageHandler messageHandler;
-
-    public QuizTelegramBot(BotConfig botConfig, MessageHandler messageHandler) {
-        this.botConfig = botConfig;
-        this.messageHandler = messageHandler;
-    }
 
     @Override
     public String getBotToken() {
@@ -36,13 +36,20 @@ public class QuizTelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            SendMessage response = messageHandler.handle(update.getMessage());
-            try {
-                execute(response);
-                log.debug("Reply sent to chat {}", update.getMessage().getChatId());
-            } catch (TelegramApiException e) {
-                log.error("Failed to send message", e);
-            }
+            executor.submit(() -> {
+                SendMessage response = messageHandler.handle(update.getMessage());
+                try {
+                    execute(response);
+                    log.debug("Reply sent to chat {}", update.getMessage().getChatId());
+                } catch (TelegramApiException e) {
+                    log.error("Failed to send message", e);
+                }
+            });
         }
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        executor.shutdown();
     }
 }

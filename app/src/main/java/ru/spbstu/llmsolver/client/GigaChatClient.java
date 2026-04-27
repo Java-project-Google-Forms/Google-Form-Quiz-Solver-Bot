@@ -1,8 +1,7 @@
 package ru.spbstu.llmsolver.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -17,10 +16,9 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class GigaChatClient implements LanguageModelClient {
-
-    private static final Logger log = LoggerFactory.getLogger(GigaChatClient.class);
     private final WebClient chatWebClient;
     private final TokenProvider tokenProvider;
     private final Duration timeout;
@@ -54,7 +52,7 @@ public class GigaChatClient implements LanguageModelClient {
                 "model", "GigaChat",
                 "messages", List.of(Map.of("role", "user", "content", prompt)),
                 "temperature", 0.7,
-                "max_tokens", 1000
+                "max_tokens", 5000
         );
 
         return chatWebClient.post()

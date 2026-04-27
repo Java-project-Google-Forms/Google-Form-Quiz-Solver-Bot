@@ -1,17 +1,18 @@
 package ru.spbstu.messagehandler.handler;
 
+import lombok.RequiredArgsConstructor;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import ru.spbstu.messagehandler.service.TelegramCommandRouter;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import ru.spbstu.messagehandler.service.UserService;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 @Component
+@RequiredArgsConstructor
 public class MessageHandler {
 
     public static final Pattern FORM_LINK_REGEX = Pattern.compile(
@@ -20,23 +21,19 @@ public class MessageHandler {
                     "[a-zA-Z0-9_-]+)(\\?.*)?$"
     );
     private final TelegramCommandRouter telegramCommandRouter;
-    private final UserService userService;
-
-    public MessageHandler(TelegramCommandRouter telegramCommandRouter, UserService userService) {
-        this.telegramCommandRouter = telegramCommandRouter;
-        this.userService = userService;
-    }
 
 
     public SendMessage handle(Message message) {
         Long chatId = message.getChatId();
         String text = message.getText();
         String firstName = message.getFrom().getFirstName();
-        userService.getOrCreateUser(chatId, firstName);
 
         String responseText;
 
         switch (text) {
+            case "/start":
+                responseText = telegramCommandRouter.handleStart();
+                break;
             case "/help":
                 responseText = telegramCommandRouter.handleHelp();
                 break;
