@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import ru.spbstu.formsolving.entity.FormStructure;
@@ -80,7 +78,7 @@ public class LlmSolver {
             Map<String, String> errorAnswers = structure.getQuestions().stream()
                     .collect(Collectors.toMap(
                             Question::getId,
-                            q -> " Ошибка LLM:: " + e.getMessage()
+                            _ -> " Ошибка LLM:: " + e.getMessage()
                     ));
             formSolvingProvider.submitResult(requestId, new SolvingResult(errorAnswers));
         }

@@ -210,21 +210,21 @@ public class GoogleFormsJsonParser {
     }
 
     private QuestionType mapTypeCode(int code) {
-        switch (code) {
-            case 0: return QuestionType.TEXT;
-            case 1: return QuestionType.PARAGRAPH;
-            case 2: return QuestionType.MULTIPLE_CHOICE;
-            case 3: return QuestionType.DROP_DOWN;
-            case 4: return QuestionType.CHECKBOX;
-            case 5: return QuestionType.LINEAR_SCALE;
-            case 9: return QuestionType.DATE;
-            case 10: return QuestionType.TIME;
-            default: return QuestionType.UNSUPPORTED;
-        }
+        return switch (code) {
+            case 0 -> QuestionType.TEXT;
+            case 1 -> QuestionType.PARAGRAPH;
+            case 2 -> QuestionType.MULTIPLE_CHOICE;
+            case 3 -> QuestionType.DROP_DOWN;
+            case 4 -> QuestionType.CHECKBOX;
+            case 5 -> QuestionType.LINEAR_SCALE;
+            case 9 -> QuestionType.DATE;
+            case 10 -> QuestionType.TIME;
+            default -> QuestionType.UNSUPPORTED;
+        };
     }
 
     public boolean isValid(FormStructure structure) {
-        if (structure.getQuestions() == null && structure.getQuestions().isEmpty()) return false;
+        if (structure.getQuestions() == null || structure.getQuestions().isEmpty()) return false;
         return structure.getQuestions().stream()
                 .anyMatch(q -> q.getType() != QuestionType.UNSUPPORTED);
     }

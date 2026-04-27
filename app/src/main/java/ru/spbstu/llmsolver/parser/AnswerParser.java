@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.spbstu.llmsolver.service.LLMQuestionSolver.AnswerWithConfidence;
 import ru.spbstu.llmsolver.service.LLMQuestionSolver.Question;

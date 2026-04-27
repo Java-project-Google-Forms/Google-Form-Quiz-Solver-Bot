@@ -2,7 +2,6 @@ package ru.spbstu.formsolving.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 
 import java.util.List;
 
