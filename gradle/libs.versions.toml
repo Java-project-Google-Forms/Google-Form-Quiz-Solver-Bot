@@ -13,6 +13,7 @@ mongodb-driver       = "5.3.1"
 spring-data-mongodb  = "4.5.0"
 reactor-kafka        = "1.3.23"
 jsoup                = "1.17.2"
+lombok               = "1.18.40"
 
 [libraries]
 # Spring Core
@@ -57,9 +58,11 @@ junit-jupiter          = { module = "org.junit.jupiter:junit-jupiter",      vers
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.12.0" }
 spring-test            = { module = "org.springframework:spring-test",      version.ref = "spring" }
 
-
 # Json parsing
 jsoup                  = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+
+# Lombok
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 
 
 [plugins]

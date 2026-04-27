@@ -1,9 +1,11 @@
 package ru.spbstu.formsolving.parser;
 
+import lombok.experimental.UtilityClass;
 import ru.spbstu.formsolving.entity.FormStructure;
 import ru.spbstu.formsolving.entity.Question;
 import ru.spbstu.formsolving.entity.QuestionType;
 
+@UtilityClass
 public class FormatStructure {
     public static String formatStructureMessage(FormStructure structure) {
         StringBuilder sb = new StringBuilder();

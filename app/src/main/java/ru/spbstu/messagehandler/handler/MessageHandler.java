@@ -1,5 +1,6 @@
 package ru.spbstu.messagehandler.handler;
 
+import lombok.RequiredArgsConstructor;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import ru.spbstu.messagehandler.service.TelegramCommandRouter;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import java.util.regex.Pattern;
 
 
 @Component
+@RequiredArgsConstructor
 public class MessageHandler {
 
     public static final Pattern FORM_LINK_REGEX = Pattern.compile(
@@ -19,10 +21,6 @@ public class MessageHandler {
                     "[a-zA-Z0-9_-]+)(\\?.*)?$"
     );
     private final TelegramCommandRouter telegramCommandRouter;
-
-    public MessageHandler(TelegramCommandRouter telegramCommandRouter) {
-        this.telegramCommandRouter = telegramCommandRouter;
-    }
 
 
     public SendMessage handle(Message message) {

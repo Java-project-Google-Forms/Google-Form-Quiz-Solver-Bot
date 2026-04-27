@@ -51,6 +51,10 @@ dependencies {
 
     // Json parsing
     implementation(libs.jsoup)
+
+    // Lombok
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
 }
 
 java {

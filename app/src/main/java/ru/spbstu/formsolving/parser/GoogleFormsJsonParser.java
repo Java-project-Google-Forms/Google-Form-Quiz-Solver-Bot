@@ -2,6 +2,8 @@ package ru.spbstu.formsolving.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
@@ -14,16 +16,14 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class GoogleFormsJsonParser {
 
     private static final Pattern FB_PUBLIC_LOAD_DATA_PATTERN =
             Pattern.compile("var\\s+FB_PUBLIC_LOAD_DATA_\\s*=\\s*(\\[.*?]);\\s*</script>", Pattern.DOTALL);
     private final ObjectMapper objectMapper;
-
-    public GoogleFormsJsonParser() {
-        this.objectMapper = new ObjectMapper();
-    }
 
     public FormStructure parse(String formUrl) throws IOException {
         Document doc = Jsoup.connect(formUrl).userAgent("Mozilla/5.0").get();

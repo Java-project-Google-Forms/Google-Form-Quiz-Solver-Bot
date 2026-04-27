@@ -2,6 +2,8 @@ package ru.spbstu.llmsolver;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -19,21 +21,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class LlmSolver {
 
-    private static final Logger log = LoggerFactory.getLogger(LlmSolver.class);
     private final FormSolvingProvider formSolvingProvider;
     private final LLMQuestionSolver llmQuestionSolver;
     private final ObjectMapper objectMapper;
-
-    public LlmSolver(FormSolvingProvider formSolvingProvider,
-                     LLMQuestionSolver llmQuestionSolver,
-                     ObjectMapper objectMapper) {
-        this.formSolvingProvider = formSolvingProvider;
-        this.llmQuestionSolver = llmQuestionSolver;
-        this.objectMapper = objectMapper;
-    }
 
     @KafkaListener(topics = "form-solving-requests", groupId = "llm-solver-group")
     public void handleRequest(String message) {

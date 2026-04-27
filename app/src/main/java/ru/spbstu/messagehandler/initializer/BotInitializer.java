@@ -1,5 +1,7 @@
 package ru.spbstu.messagehandler.initializer;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.spbstu.messagehandler.bot.QuizTelegramBot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,14 +13,10 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 @Component
+@Slf4j
+@RequiredArgsConstructor
 public class BotInitializer {
-
-    private static final Logger log = LoggerFactory.getLogger(BotInitializer.class);
     private final QuizTelegramBot quizBot;
-
-    public BotInitializer(QuizTelegramBot quizBot) {
-        this.quizBot = quizBot;
-    }
 
     @EventListener(ContextRefreshedEvent.class)
     public void init() {

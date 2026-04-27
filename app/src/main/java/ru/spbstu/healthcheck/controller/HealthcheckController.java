@@ -1,6 +1,8 @@
 package ru.spbstu.healthcheck.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,14 +12,11 @@ import ru.spbstu.healthcheck.dto.HealthStatus;
 
 import java.io.InputStream;
 
+@Slf4j
 @RestController
+@RequiredArgsConstructor
 public class HealthcheckController {
-
     private final ObjectMapper objectMapper;
-
-    public HealthcheckController(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     @GetMapping("/healthcheck")
     public Mono<HealthStatus> healthcheck() {
@@ -34,7 +33,7 @@ public class HealthcheckController {
                 status.setAuthors(authors);
             }
         } catch (Exception e) {
-            System.err.println("Warning: Could not load authors.json: " + e.getMessage());
+            log.warn("Could not load authors.json: {}", e.getMessage());
         }
 
         return Mono.just(status);

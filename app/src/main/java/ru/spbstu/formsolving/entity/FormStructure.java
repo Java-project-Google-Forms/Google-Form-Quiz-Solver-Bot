@@ -1,28 +1,15 @@
 package ru.spbstu.formsolving.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+
 import java.util.List;
 
+@Data
+@AllArgsConstructor
 public class FormStructure  {
-    String title;
-    String description;
-    List<Question> questions;
-
-
-    public FormStructure(String title, String description, List<Question> questions) {
-        this.title = title;
-        this.description = description;
-        this.questions = questions;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public List<Question> getQuestions() {
-        return questions;
-    }
+    private String title;
+    private String description;
+    private List<Question> questions;
 }

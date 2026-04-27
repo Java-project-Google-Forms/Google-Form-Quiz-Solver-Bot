@@ -1,6 +1,8 @@
 package ru.spbstu.llmsolver.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -17,10 +19,9 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class GigaChatClient implements LanguageModelClient {
-
-    private static final Logger log = LoggerFactory.getLogger(GigaChatClient.class);
     private final WebClient chatWebClient;
     private final TokenProvider tokenProvider;
     private final Duration timeout;

@@ -1,5 +1,7 @@
 package ru.spbstu.messagehandler.bot;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.spbstu.messagehandler.config.BotConfig;
 import ru.spbstu.messagehandler.handler.MessageHandler;
 import org.slf4j.Logger;
@@ -15,18 +17,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Component
+@Slf4j
+@RequiredArgsConstructor
 public class QuizTelegramBot extends TelegramLongPollingBot {
-
-    private static final Logger log = LoggerFactory.getLogger(QuizTelegramBot.class);
     private final ExecutorService executor = Executors.newFixedThreadPool(10);
 
     private final BotConfig botConfig;
     private final MessageHandler messageHandler;
-
-    public QuizTelegramBot(BotConfig botConfig, MessageHandler messageHandler) {
-        this.botConfig = botConfig;
-        this.messageHandler = messageHandler;
-    }
 
     @Override
     public String getBotToken() {

@@ -1,6 +1,8 @@
 package ru.spbstu.formsolving.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,21 +15,18 @@ import ru.spbstu.formsolving.FormSolvingProperties;
 
 import java.util.Map;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class KafkaProducerService {
 
-    private static final Logger log = LoggerFactory.getLogger(KafkaProducerService.class);
     private final KafkaSender<String, String> kafkaSender;
+    private final FormSolvingProperties properties;
     private final ObjectMapper objectMapper;
-    private final String requestTopic;
 
-    public KafkaProducerService(KafkaSender<String, String> kafkaSender,
-                                FormSolvingProperties properties,
-                                ObjectMapper objectMapper) {
-        this.kafkaSender = kafkaSender;
-        this.objectMapper = objectMapper;
-        this.requestTopic = properties.kafkaTopic();
-    }
+
+    private String getRequestTopic() { return properties.kafkaTopic(); }
+
 
     public void sendSolveTask(String requestId) {
         try {
@@ -36,7 +35,8 @@ public class KafkaProducerService {
                     "type", "SOLVE"
             );
             String json = objectMapper.writeValueAsString(task);
-            ProducerRecord<String, String> record = new ProducerRecord<>(requestTopic, requestId, json);
+            ProducerRecord<String, String> record = new ProducerRecord<>(getRequestTopic(),
+                    requestId, json);
             kafkaSender.send(Mono.just(SenderRecord.create(record, requestId)))
                     .doOnError(e -> log.error("Failed to send solve task for requestId={}", requestId, e))
                     .subscribe(); // неблокирующе
@@ -52,7 +52,8 @@ public class KafkaProducerService {
                     "type", "RESCORE"
             );
             String json = objectMapper.writeValueAsString(task);
-            ProducerRecord<String, String> record = new ProducerRecord<>(requestTopic, requestId, json);
+            ProducerRecord<String, String> record = new ProducerRecord<>(getRequestTopic(),
+                    requestId, json);
             kafkaSender.send(Mono.just(SenderRecord.create(record, requestId)))
                     .doOnError(e -> log.error("Failed to send rescore task for requestId={}", requestId, e))
                     .subscribe();

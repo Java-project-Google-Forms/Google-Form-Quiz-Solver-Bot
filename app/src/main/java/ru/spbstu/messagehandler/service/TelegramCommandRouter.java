@@ -1,5 +1,6 @@
 package ru.spbstu.messagehandler.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
@@ -12,18 +13,11 @@ import static ru.spbstu.messagehandler.handler.MessageHandler.FORM_LINK_REGEX;
  * Координирует вызовы других модулей (MongoDB, Kafka, GigaChat и т.д.)
  */
 @Component
+@RequiredArgsConstructor
 public class TelegramCommandRouter {
-    // TODO Change for asynchronous use, methods should return completable future.
     private final FormSolvingService formSolving;
     private final HistoryService history;
     private final RequestStatusService requestStatus;
-
-    public TelegramCommandRouter(FormSolvingService formSolving, HistoryService history,
-                                 RequestStatusService requestStatus) {
-        this.formSolving = formSolving;
-        this.history = history;
-        this.requestStatus = requestStatus;
-    }
 
     public String handleStart() {
         return """
@@ -137,7 +131,7 @@ public class TelegramCommandRouter {
         if (argument != null && !argument.isBlank()) {
             String period = argument.trim().toLowerCase();
             if (allowedPeriods.contains(period)) {
-                return history.getHistory(chatId, argument);
+                return history.getHistory(chatId, period);
             } else {
                 return "❌ Неверный период. Используйте: day, week, month, all";
             }

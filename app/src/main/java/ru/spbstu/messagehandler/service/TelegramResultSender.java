@@ -1,5 +1,6 @@
 package ru.spbstu.messagehandler.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.spbstu.formsolving.service.ResultSender;
 
@@ -7,14 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class TelegramResultSender implements ResultSender {
     private final int MAX_LEN = 4000;
 
     private final TelegramMessageSender messageSender;
-
-    public TelegramResultSender(TelegramMessageSender messageSender) {
-        this.messageSender = messageSender;
-    }
 
     @Override
     public void sendResult(Long chatId, String text) {

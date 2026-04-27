@@ -1,6 +1,7 @@
 package ru.spbstu.llmsolver.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,15 +19,14 @@ import javax.net.ssl.SSLException;
 import java.time.Duration;
 import java.util.UUID;
 
+@Slf4j
 @Component
 public class TokenProvider {
-
-    private static final Logger log = LoggerFactory.getLogger(TokenProvider.class);
     private final WebClient tokenWebClient;
-    private final String authKey;
+    private final LlmConfig config;
 
     public TokenProvider(LlmConfig config, HttpClient httpClient) {
-        this.authKey = config.getApiKey();
+        this.config = config;
         this.tokenWebClient = WebClient.builder()
                 .baseUrl(config.getTokenUrl())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -37,7 +37,7 @@ public class TokenProvider {
     public Mono<String> getAccessToken() {
         return tokenWebClient.post()
                 .uri("/oauth")
-                .header(HttpHeaders.AUTHORIZATION, "Basic " + authKey)
+                .header(HttpHeaders.AUTHORIZATION, "Basic " + config.getApiKey())
                 .header("RqUID", UUID.randomUUID().toString())
                 .bodyValue("scope=GIGACHAT_API_PERS")
                 .retrieve()

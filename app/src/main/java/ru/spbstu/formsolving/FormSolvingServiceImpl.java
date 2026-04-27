@@ -1,5 +1,6 @@
 package ru.spbstu.formsolving;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -17,10 +18,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Service
 public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingProvider {
-
-    private static final Logger log = LoggerFactory.getLogger(FormSolvingServiceImpl.class);
 
     private final GoogleFormsJsonParser parser;
     private final KafkaProducerService kafkaProducer;
@@ -40,7 +40,6 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
     public boolean solveForm(Long chatId, String link) {
         try {
             FormStructure structure = parser.parse(link);
-            // TODO make correct isValid check for form structure
             if (!parser.isValid(structure)) {
                 resultSender.sendResult(chatId, "❌ Форма содержит неподдерживаемые типы вопросов или не содержит вопросов.");
                 return false;
