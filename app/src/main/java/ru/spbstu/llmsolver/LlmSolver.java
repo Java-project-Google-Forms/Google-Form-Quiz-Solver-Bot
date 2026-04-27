@@ -85,7 +85,7 @@ public class LlmSolver {
             Map<String, String> errorAnswers = structure.getQuestions().stream()
                     .collect(Collectors.toMap(
                             Question::getId,
-                            q -> "❌ LLM solving error: " + e.getMessage()
+                            q -> " Ошибка LLM:: " + e.getMessage()
                     ));
             formSolvingProvider.submitResult(requestId, new SolvingResult(errorAnswers));
         }
