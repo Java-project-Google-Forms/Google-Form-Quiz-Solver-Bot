@@ -12,7 +12,7 @@ public class RequestStatusDocument {
     private String id;
 
     @Field("requestId")
-    private Integer requestId;
+    private String requestId;
 
     @Field("chatId")
     private String chatId;
@@ -26,8 +26,8 @@ public class RequestStatusDocument {
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
-    public Integer getRequestId() { return requestId; }
-    public void setRequestId(Integer requestId) { this.requestId = requestId; }
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String requestId) { this.requestId = requestId; }
 
     public String getChatId() { return chatId; }
     public void setChatId(String chatId) { this.chatId = chatId; }

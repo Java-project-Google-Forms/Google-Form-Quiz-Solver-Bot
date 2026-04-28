@@ -14,6 +14,7 @@ import ru.spbstu.database.document.UserDocument;
 
 import java.time.Instant;
 import java.util.Random;
+import java.util.UUID;
 
 @Component
 @Profile("mongo")
@@ -61,7 +62,7 @@ public class MongoFormStorageService implements FormStorageService {
     }
 
     @Override
-    public void updateRequestStatus(Long chatId, Integer requestId, String status) {
+    public void updateRequestStatus(Long chatId, String requestId, String status) {
         requestStatusRepository.findByRequestIdAndChatId(requestId, chatId.toString())
                 .flatMap(doc -> {
                     doc.setStatus(status);
@@ -71,9 +72,9 @@ public class MongoFormStorageService implements FormStorageService {
     }
 
     @Override
-    public Integer createRequest(Long chatId) {
+    public String createRequest(Long chatId) {
         RequestStatusDocument doc = new RequestStatusDocument();
-        Integer requestId = new Random().nextInt(100000);
+        String requestId = UUID.randomUUID().toString();
         doc.setRequestId(requestId);
         doc.setChatId(chatId.toString());
         doc.setStatus("PENDING");

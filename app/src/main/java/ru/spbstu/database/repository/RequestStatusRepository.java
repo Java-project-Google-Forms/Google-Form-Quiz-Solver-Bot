@@ -7,5 +7,5 @@ import ru.spbstu.database.document.RequestStatusDocument;
 
 @Repository
 public interface RequestStatusRepository extends ReactiveMongoRepository<RequestStatusDocument, String> {
-    Mono<RequestStatusDocument> findByRequestIdAndChatId(Integer requestId, String chatId);
+    Mono<RequestStatusDocument> findByRequestIdAndChatId(String requestId, String chatId);
 }

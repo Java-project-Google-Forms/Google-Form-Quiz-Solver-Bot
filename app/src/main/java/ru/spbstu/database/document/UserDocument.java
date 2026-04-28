@@ -25,7 +25,7 @@ public class UserDocument {
     private boolean hasCurrentRequest;
 
     @Field("savedForms")
-    private List<Integer> savedForms = new ArrayList<>();
+    private List<String> savedForms = new ArrayList<>();
 
     @Field("history")
     private List<HistoryEntryDocument> history = new ArrayList<>();
@@ -45,8 +45,8 @@ public class UserDocument {
     public boolean isHasCurrentRequest() { return hasCurrentRequest; }
     public void setHasCurrentRequest(boolean hasCurrentRequest) { this.hasCurrentRequest = hasCurrentRequest; }
 
-    public List<Integer> getSavedForms() { return savedForms; }
-    public void setSavedForms(List<Integer> savedForms) { this.savedForms = savedForms; }
+    public List<String> getSavedForms() { return savedForms; }
+    public void setSavedForms(List<String> savedForms) { this.savedForms = savedForms; }
 
     public List<HistoryEntryDocument> getHistory() { return history; }
     public void setHistory(List<HistoryEntryDocument> history) { this.history = history; }

@@ -8,7 +8,7 @@ import ru.spbstu.messagehandler.service.RequestStatusService;
 @Profile("stub")
 public class StubRequestStatusService implements RequestStatusService {
     @Override
-    public String getStatus(Long chatId, Integer requestId) {
+    public String getStatus(Long chatId, String requestId) {
         return "Статус запроса " + requestId + ": выполняется (заглушка)";
     }
 }

@@ -82,7 +82,7 @@ public class MongoHistoryService implements HistoryService {
     public String getMyForms(Long chatId) {
         return getOrCreateUser(chatId)
                 .flatMap(user -> {
-                    List<Integer> savedForms = user.getSavedForms();
+                    List<String> savedForms = user.getSavedForms();
                     if (savedForms == null || savedForms.isEmpty()) {
                         return Mono.just("📋 У вас нет сохранённых форм.");
                     }

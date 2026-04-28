@@ -51,9 +51,9 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
                 resultSender.sendResult(chatId, "❌ Форма содержит неподдерживаемые типы вопросов или не содержит вопросов.");
                 return false;
             }
-            Integer internalId = storageService.createRequest(chatId);
-            String requestId = internalId.toString();
-            //String requestId = UUID.randomUUID().toString();
+            //Integer internalId = storageService.createRequest(chatId);
+            //String requestId = internalId.toString();
+            String requestId = storageService.createRequest(chatId);
             tasks.put(requestId, new FormTaskInfo(chatId, link, structure));
 
             // Отправляем в Kafka только requestId (неблокирующе)
@@ -100,8 +100,12 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
         //
         try {
             FormDocument doc = new FormDocument();
-            doc.setFormId(Integer.parseInt(requestId));
+            doc.setFormId(requestId);
             doc.setFormName(info.structure().getTitle());
+            doc.setSolved(true);
+
+            doc.setFormLink(info.formUrl()); 
+        
             doc.setSolved(true);
             // Здесь можно добавить цикл по вопросам, если нужно сохранять их в БД
 
@@ -120,7 +124,7 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
             doc.setQuestions(questionDocs);
             
             storageService.saveForm(info.chatId(), doc);
-            storageService.updateRequestStatus(info.chatId(), Integer.parseInt(requestId), "COMPLETED");
+            storageService.updateRequestStatus(info.chatId(), requestId, "COMPLETED");
             storageService.finalizeRequest(info.chatId()); // Тот самый метод для сброса флага
         } catch (Exception e) {
             log.error("Failed to save to MongoDB", e);

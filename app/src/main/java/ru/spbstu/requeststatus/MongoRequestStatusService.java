@@ -17,7 +17,7 @@ public class MongoRequestStatusService implements RequestStatusService {
     }
 
     @Override
-    public String getStatus(Long chatId, Integer requestId) {
+    public String getStatus(Long chatId, String requestId) {
         return requestStatusRepository.findByRequestIdAndChatId(requestId, chatId.toString())
                 .map(doc -> "📊 Запрос #" + requestId + "\nСтатус: " + formatStatus(doc.getStatus()))
                 .switchIfEmpty(Mono.just("❌ Запрос #" + requestId + " не найден."))

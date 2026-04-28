@@ -6,7 +6,7 @@ import java.time.Instant;
 public class HistoryEntryDocument {
 
     @Field("formId")
-    private Integer formId;
+    private String formId;
 
     @Field("status")
     private String status;
@@ -14,8 +14,8 @@ public class HistoryEntryDocument {
     @Field("solvedDate")
     private Instant solvedDate;
 
-    public Integer getFormId() { return formId; }
-    public void setFormId(Integer formId) { this.formId = formId; }
+    public String getFormId() { return formId; }
+    public void setFormId(String formId) { this.formId = formId; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

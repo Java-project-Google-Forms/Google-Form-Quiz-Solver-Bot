@@ -16,7 +16,10 @@ public class FormDocument {
     private Integer ownerId;
 
     @Field("formId")
-    private Integer formId;
+    private String formId;
+
+    @Field("formLink")
+    private String formLink;
 
     @Field("formName")
     private String formName;
@@ -33,8 +36,11 @@ public class FormDocument {
     public Integer getOwnerId() { return ownerId; }
     public void setOwnerId(Integer ownerId) { this.ownerId = ownerId; }
 
-    public Integer getFormId() { return formId; }
-    public void setFormId(Integer formId) { this.formId = formId; }
+    public String getFormId() { return formId; }
+    public void setFormId(String formId) { this.formId = formId; }
+
+    public String getFormLink() { return formLink; }
+    public void setFormLink(String formLink) { this.formLink = formLink; }
 
     public String getFormName() { return formName; }
     public void setFormName(String formName) { this.formName = formName; }

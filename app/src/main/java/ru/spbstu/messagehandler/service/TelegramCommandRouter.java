@@ -191,15 +191,16 @@ public class TelegramCommandRouter {
      * @param chatId   идентификатор чата
      */
     public String handleStatus(String argument, Long chatId) {
-        // TODO: запросить статус через Kafka или из БД
         if (argument == null || argument.isBlank()) {
-            return "❌ Укажите ID формы: /status &lt;formId&gt;";
+            return "❌ Укажите ID запроса: /status <requestId>";
         }
+        
         try {
-            Integer requestId = Integer.parseInt(argument.trim());
-            return requestStatus.getStatus(chatId, requestId);
-        } catch (NumberFormatException e) {
-            return "❌ ID формы должен быть числом";
+            String requestId = argument.trim();
+            // Просто возвращаем то, что дает сервис, так как он возвращает String
+            return requestStatus.getStatus(chatId, requestId); 
+        } catch (Exception e) {
+            return "❌ Ошибка при получении статуса: " + e.getMessage();
         }
     }
 
