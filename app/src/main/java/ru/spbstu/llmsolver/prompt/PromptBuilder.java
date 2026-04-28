@@ -10,25 +10,33 @@ public class PromptBuilder {
 
     public String buildPrompt(List<Question> questions) {
         StringBuilder sb = new StringBuilder();
-        sb.append("You are an assistant that answers quiz questions. Return answers in JSON format:\n");
+        sb.append("Ты — полезный ассистент, отвечающий на вопросы викторины или формы. Твоя задача — дать точный и полезный ответ на каждый вопрос.\n");
+        sb.append("Отвечай строго в формате JSON без лишнего текста:\n");
         sb.append("{\n");
-        sb.append("  \"1\": { \"answer\": \"your answer\", \"confidence\": number },\n");
-        sb.append("  \"2\": { \"answer\": \"your answer\", \"confidence\": number }\n");
+        sb.append("  \"1\": { \"answer\": \"твой ответ\", \"confidence\": число },\n");
+        sb.append("  \"2\": { \"answer\": \"твой ответ\", \"confidence\": число }\n");
         sb.append("}\n");
-        sb.append("No extra text, only JSON. Confidence is integer 0-100.\n");
-        sb.append("RULES:\n");
-        sb.append("- For factual questions (e.g., capital of France, 15*3, Red Planet), provide correct answer and high confidence.\n");
-        sb.append("- For questions asking for personal information (full name, date of birth, phone, email, address, credit card, mother's maiden name), answer with \"__PERSONAL__\" and confidence 0.\n");
-        sb.append("- For questions asking for current date or current time (today's date, what time is it now), answer with \"UNKNOWN\" and confidence 0.\n");
-        sb.append("- However, questions asking for generally accepted best choice (e.g., 'best programming language for beginners', 'best framework for web development') are NOT considered subjective — they can be answered with common knowledge.\n");
-        sb.append("- Always provide an answer field, never leave it empty. If none of the above fits, answer \"UNKNOWN\" with confidence 0.\n");
-        sb.append("- Provide answers in the language in which questions are provided.\n\n");
-        sb.append("Questions:\n");
+        sb.append("Поле confidence — целое число от 0 до 100, где 100 означает полную уверенность.\n\n");
+        
+        sb.append("**ПРАВИЛА (соблюдай их точно):**\n");
+        sb.append("1. Если вопрос запрашивает **личную, конфиденциальную информацию конкретного человека** (например: ФИО, дата рождения, телефон, email, адрес, паспорт, кредитная карта, девичья фамилия матери) — тогда ответь \"__PERSONAL__\" и поставь confidence = 0.\n");
+        sb.append("2. Если вопрос про **текущую дату или время** (например: \"сегодняшняя дата\", \"который час\") — ответь \"UNKNOWN\" и confidence = 0.\n");
+        sb.append("3. Во **всех остальных случаях** (факты, математика, география, выбор варианта, даже субъективные предпочтения или оценки) — **дай конкретный ответ**, основанный на твоих знаниях или общепринятых представлениях. НЕ используй \"__PERSONAL__\" для обычных вопросов.\n");
+        sb.append("   Примеры правильных ответов:\n");
+        sb.append("   - \"Столица Франции?\" → \"Париж\"\n");
+        sb.append("   - \"Сколько лап у паука?\" → \"8\"\n");
+        sb.append("   - \"Какая оценка наивысшая в российских школах?\" → \"5\"\n");
+        sb.append("   - \"Введите дату начала Первой мировой войны\" → \"28 июля 1914 года\"\n");
+        sb.append("   - \"Как здороваться 'Добрый вечер'?\" → \"после 18:00\"\n");
+        sb.append("4. Никогда не оставляй поле answer пустым. Если ты не знаешь ответ, напиши \"UNKNOWN\" (но это редко).\n");
+        sb.append("5. Отвечай на том же языке, на котором задан вопрос (русский → русский, английский → английский).\n\n");
+        
+        sb.append("Теперь ответь на следующие вопросы строго в JSON формате. НЕ используй '__PERSONAL__' для обычных фактов!\n");
         for (int i = 0; i < questions.size(); i++) {
             Question q = questions.get(i);
             sb.append(i + 1).append(". ").append(q.text());
             if (q.options() != null && !q.options().isEmpty()) {
-                sb.append(" (options: ").append(String.join(", ", q.options())).append(")");
+                sb.append(" (варианты: ").append(String.join(", ", q.options())).append(")");
             }
             sb.append("\n");
         }

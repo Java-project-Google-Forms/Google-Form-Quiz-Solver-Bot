@@ -9,6 +9,6 @@ package ru.spbstu.messagehandler.service.api;
 public interface HistoryService {
     String getHistory(Long chatId, String period); // period: day, week, month, all
     String getMyForms(Long chatId);
-    String getForm(Long chatId, Integer formId);
-    String removeForm(Long chatId, Integer formId);
+    String getForm(Long chatId, String formId);
+    String removeForm(Long chatId, String formId);
 }

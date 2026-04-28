@@ -11,6 +11,10 @@ import ru.spbstu.formsolving.service.KafkaProducerService;
 import ru.spbstu.formsolving.service.ResultSender;
 import ru.spbstu.formsolving.service.api.FormSolvingService;
 
+
+import ru.spbstu.database.document.FormDocument;
+import ru.spbstu.messagehandler.service.FormStorageService;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +44,8 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
     private final GoogleFormsJsonParser parser;
     private final KafkaProducerService kafkaProducer;
     private final ResultSender resultSender;
+    //
+    private final FormStorageService storageService;
 
     private final Map<String, FormTaskInfo> tasks = new ConcurrentHashMap<>();
 
@@ -52,10 +58,12 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
      */
     public FormSolvingServiceImpl(GoogleFormsJsonParser parser,
                                   KafkaProducerService kafkaProducer,
-                                  @Lazy ResultSender resultSender) {
+                                  @Lazy ResultSender resultSender,
+                                  FormStorageService storageService) { //
         this.parser = parser;
         this.kafkaProducer = kafkaProducer;
         this.resultSender = resultSender;
+        this.storageService = storageService;
     }
 
     /**
@@ -79,7 +87,7 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
                 resultSender.sendResult(chatId, "❌ Форма содержит неподдерживаемые типы вопросов или не содержит вопросов.");
                 return false;
             }
-            String requestId = UUID.randomUUID().toString();
+            String requestId = storageService.createRequest(chatId);
             tasks.put(requestId, new FormTaskInfo(chatId, link, structure));
 
             // Отправляем в Kafka только requestId (неблокирующе)
@@ -108,17 +116,31 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
      * @return {@code true} (always, unless an exception occurs)
      */
     @Override
-    public boolean rescoreForm(Long chatId, Integer formId) {
-        String requestId = UUID.randomUUID().toString();
-        FormStructure stubStructure = new FormStructure(
-                "Stub form", "No description", java.util.List.of()
-        );
-        tasks.put(requestId, new FormTaskInfo(chatId, null, stubStructure));
-        kafkaProducer.sendRescoreTask(requestId);
-        log.info("Rescore task enqueued (stub): requestId={}, chatId={}, formId={}",
-                requestId, chatId, formId);
-        return true;
+    public boolean rescoreForm(Long chatId, String formId) {
+        FormStructure structure = null;
+        try {
+            structure = storageService.getFormStructure(chatId, formId);
+
+            String requestId = storageService.createRequest(chatId);
+            tasks.put(requestId, new FormTaskInfo(chatId, "", structure));
+
+            // Отправляем в Kafka только requestId (неблокирующе)
+            kafkaProducer.sendSolveTask(requestId);
+
+            // Отправляем пользователю подтверждение
+            resultSender.sendResult(chatId, "✅ Форма принята в обработку. ID запроса: " + requestId);
+            return true;
+
+        } catch (NoSuchFieldException e) {
+            resultSender.sendResult(chatId, "❌ Не удалось получить форму по переданному id.");
+            return false;
+        } catch (Exception e) {
+            resultSender.sendResult(chatId, "❌ Ошибка при обработке формы: " + formId);
+            log.error("rescoreForm failed", e);
+            return false;
+        }
     }
+
 
     // === Реализация FormSolvingProvider ===
 
@@ -156,6 +178,40 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
             log.error("No task found for requestId={}", requestId);
             return;
         }
+        //
+        try {
+            FormDocument doc = new FormDocument();
+            doc.setFormId(requestId);
+            doc.setFormName(info.structure().getTitle());
+            doc.setSolved(true);
+
+            doc.setFormLink(info.formUrl()); 
+        
+            doc.setSolved(true);
+            // Здесь можно добавить цикл по вопросам, если нужно сохранять их в БД
+
+            java.util.List<ru.spbstu.database.document.QuestionDocument> questionDocs = info.structure().getQuestions().stream()
+                    .map(q -> {
+                        ru.spbstu.database.document.QuestionDocument qDoc = new ru.spbstu.database.document.QuestionDocument();
+                        qDoc.setBody(q.getTitle());
+                        qDoc.setType(q.getType().name());
+                        
+                        Object answer = result.answers().get(q.getId());
+                        qDoc.setAnswer(answer != null ? answer : "Ответ не найден");
+                        return qDoc;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+
+            doc.setQuestions(questionDocs);
+            
+            storageService.saveForm(info.chatId(), doc);
+            storageService.updateRequestStatus(info.chatId(), requestId, "COMPLETED");
+            storageService.finalizeRequest(info.chatId()); // Тот самый метод для сброса флага
+        } catch (Exception e) {
+            log.error("Failed to save to MongoDB", e);
+        }
+        //
+
 
         StringBuilder sb = new StringBuilder();
         sb.append("✅ Результат решения формы \n\n").append(FormatStructure.escapeHtml(info.structure().getTitle()))

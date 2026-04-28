@@ -22,5 +22,5 @@ public interface FormSolvingService {
      * @param formId identifier of the form (string UUID in practice, but currently Integer)
      * @return true if the rescore request was accepted
      */
-    boolean rescoreForm(Long chatId, Integer formId);
+    boolean rescoreForm(Long chatId, String formId);
 }

@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 
+import ru.spbstu.messagehandler.service.UserService;
+
 import static ru.spbstu.messagehandler.handler.MessageHandler.FORM_LINK_REGEX;
 
 /**
@@ -26,6 +28,7 @@ public class TelegramCommandRouter {
     private final FormSolvingService formSolving;
     private final HistoryService history;
     private final RequestStatusService requestStatus;
+    private final UserService userService; //
 
     /**
      * Returns the welcome message with bot description and usage hints.
@@ -114,19 +117,18 @@ public class TelegramCommandRouter {
      * @return acceptance message or error
      */
     public String handleRescore(String argument, Long chatId) {
-        // TODO: отправить запрос на пересчёт
         if (argument == null || argument.isBlank()) {
             return "❌ Укажите ID формы: /rescore &lt;formId&gt;";
         }
-        try {
-            Integer formId = Integer.parseInt(argument.trim());
+        String formId = argument.trim();
+        if (isValidUuid(formId)) {
             if (formSolving.rescoreForm(chatId, formId)) {
                 return "Отправили запрос на повторную обработку формы, ожидайте...";
             } else {
                 return "Не удалось принять форму на повторную обработку.";
             }
-        } catch (NumberFormatException e) {
-            return "❌ ID формы должен быть числом";
+        } else {
+            return "❌ ID формы неправильного формата";
         }
     }
 
@@ -136,10 +138,9 @@ public class TelegramCommandRouter {
      * @param chatId   user's chat identifier
      * @return formatted history or error
      */
-    public String handleHistory(String argument, Long chatId) {
-        // TODO: получить историю из БД
-        List<String> allowedPeriods = Arrays.asList("day", "week", "month", "all");
-        if (argument != null && !argument.isBlank()) {
+     public String handleHistory(String argument, Long chatId) {
+    	List<String> allowedPeriods = Arrays.asList("day", "week", "month", "all");
+    	if (argument != null && !argument.isBlank()) {
             String period = argument.trim().toLowerCase();
             if (allowedPeriods.contains(period)) {
                 return history.getHistory(chatId, period);
@@ -147,9 +148,9 @@ public class TelegramCommandRouter {
                 return "❌ Неверный период. Используйте: day, week, month, all";
             }
         } else {
-            return "📜 История за всё время (заглушка)";
+            return history.getHistory(chatId, "week");
         }
-    }
+     }
 
     /**
      * Returns the full content of a previously solved form with answers.
@@ -158,15 +159,14 @@ public class TelegramCommandRouter {
      * @return formatted form content or error
      */
     public String handleGetForm(String argument, Long chatId) {
-        // TODO: получить данные формы
         if (argument == null || argument.isBlank()) {
             return "❌ Укажите ID формы: /get_form &lt;formId&gt;";
         }
-        try {
-            int formId = Integer.parseInt(argument.trim());
+        String formId = argument.trim();
+        if (isValidUuid(formId)) {
             return history.getForm(chatId, formId);
-        } catch (NumberFormatException e) {
-            return "❌ ID формы должен быть числом";
+        } else {
+            return "❌ ID формы неправильного формата";
         }
     }
 
@@ -181,11 +181,11 @@ public class TelegramCommandRouter {
         if (argument == null || argument.isBlank()) {
             return "❌ Укажите ID формы: /remove_form &lt;formId&gt;";
         }
-        try {
-            Integer formId = Integer.parseInt(argument.trim());
+        String formId = argument.trim();
+        if (isValidUuid(formId)) {
             return history.removeForm(chatId, formId);
-        } catch (NumberFormatException e) {
-            return "❌ ID формы должен быть числом";
+        } else {
+            return "❌ ID формы неправильного формата";
         }
     }
 
@@ -199,11 +199,14 @@ public class TelegramCommandRouter {
         if (argument == null || argument.isBlank()) {
             return "❌ Укажите ID запроса: /status <requestId>";
         }
-        String requestId = argument.trim();
-        if (!isValidUuid(requestId)) {
-            return "❌ Неверный формат ID запроса.";
+
+        try {
+            String requestId = argument.trim();
+            // Просто возвращаем то, что дает сервис, так как он возвращает String
+            return requestStatus.getStatus(chatId, requestId);
+        } catch (Exception e) {
+            return "❌ Ошибка при получении статуса: " + e.getMessage();
         }
-        return requestStatus.getStatus(chatId, requestId);
     }
 
     /**
