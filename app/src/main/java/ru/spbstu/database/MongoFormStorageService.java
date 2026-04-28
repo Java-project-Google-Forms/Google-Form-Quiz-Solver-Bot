@@ -10,6 +10,7 @@ import ru.spbstu.database.repository.FormRepository;
 import ru.spbstu.database.repository.RequestStatusRepository;
 import ru.spbstu.database.repository.UserRepository;
 import ru.spbstu.messagehandler.service.FormStorageService;
+import ru.spbstu.database.document.UserDocument;
 
 import java.time.Instant;
 import java.util.Random;
@@ -31,26 +32,33 @@ public class MongoFormStorageService implements FormStorageService {
     }
 
     @Override
-public void saveForm(Long chatId, FormDocument form) {
-    // Получаем userId пользователя и устанавливаем в форму
-    userRepository.findByChatId(chatId.toString())
-            .flatMap(user -> {
-                form.setOwnerId(user.getUserId());
-                return formRepository.save(form)
-                        .flatMap(saved -> {
-                            if (!user.getSavedForms().contains(form.getFormId())) {
-                                user.getSavedForms().add(form.getFormId());
-                            }
-                            HistoryEntryDocument entry = new HistoryEntryDocument();
-                            entry.setFormId(form.getFormId());
-                            entry.setStatus("COMPLETED");
-                            entry.setSolvedDate(Instant.now());
-                            user.getHistory().add(entry);
-                            return userRepository.save(user);
-                        });
-            })
-            .block();
-}
+    public void saveForm(Long chatId, FormDocument form) {
+        userRepository.findByChatId(chatId.toString())
+                // Если пользователь не найден (например, не нажал /start), создаем заглушку
+                .switchIfEmpty(Mono.defer(() -> {
+                    UserDocument newUser = new UserDocument();
+                    newUser.setChatId(chatId.toString());
+                    newUser.setUserId(Math.abs(chatId.intValue()));
+                    newUser.setName("Unknown User");
+                    return userRepository.save(newUser);
+                }))
+                .flatMap(user -> {
+                    form.setOwnerId(user.getUserId());
+                    return formRepository.save(form)
+                            .flatMap(saved -> {
+                                if (!user.getSavedForms().contains(form.getFormId())) {
+                                    user.getSavedForms().add(form.getFormId());
+                                }
+                                HistoryEntryDocument entry = new HistoryEntryDocument();
+                                entry.setFormId(form.getFormId());
+                                entry.setStatus("COMPLETED");
+                                entry.setSolvedDate(Instant.now());
+                                user.getHistory().add(entry);
+                                return userRepository.save(user);
+                            });
+                })
+                .block(); // 
+    }
 
     @Override
     public void updateRequestStatus(Long chatId, Integer requestId, String status) {
@@ -70,10 +78,17 @@ public void saveForm(Long chatId, FormDocument form) {
         doc.setChatId(chatId.toString());
         doc.setStatus("PENDING");
         doc.setCreatedAt(Instant.now());
-        requestStatusRepository.save(doc).block();
+        requestStatusRepository.save(doc).block(); // Это у вас работает
 
-        // Отмечаем что у пользователя есть активный запрос
+        // ФОРСИРУЕМ сохранение пользователя, если его нет
         userRepository.findByChatId(chatId.toString())
+                .switchIfEmpty(Mono.defer(() -> {
+                    UserDocument newUser = new UserDocument();
+                    newUser.setChatId(chatId.toString());
+                    newUser.setUserId(Math.abs(chatId.intValue()));
+                    newUser.setName("User_" + chatId);
+                    return userRepository.save(newUser);
+                }))
                 .flatMap(user -> {
                     user.setHasCurrentRequest(true);
                     return userRepository.save(user);
@@ -81,5 +96,13 @@ public void saveForm(Long chatId, FormDocument form) {
                 .block();
 
         return requestId;
+    }
+
+    public void finalizeRequest(Long chatId) {
+        userRepository.findByChatId(chatId.toString())
+                .flatMap(user -> {
+                    user.setHasCurrentRequest(false);
+                    return userRepository.save(user);
+                }).block();
     }
 }

@@ -1,23 +1,11 @@
-# Build stage
-FROM eclipse-temurin:25-jdk-alpine AS build
-WORKDIR /workspace
-
-COPY gradle gradle
-COPY gradlew gradlew
-COPY settings.gradle.kts settings.gradle.kts
-COPY gradle.properties gradle.properties
-COPY app/build.gradle.kts app/build.gradle.kts
-COPY app/src app/src
-
-RUN chmod +x gradlew && ./gradlew :app:shadowJar --no-daemon \
-    -Dorg.gradle.java.installations.auto-download=false
-
-# Runtime stage
+# Используем легкий образ только для запуска (JRE), так как код уже скомпилирован
 FROM eclipse-temurin:25-jre-alpine
+
 WORKDIR /app
 
-COPY --from=build /workspace/app/build/libs/app.jar app.jar
+# Копируем созданный JAR-файл из папки сборки в образ
+# Используем маску *.jar, чтобы не ошибиться в точном имени
+COPY app/build/libs/*.jar app.jar
 
-EXPOSE 8080
-
+# Указываем Docker, как запускать бота
 ENTRYPOINT ["java", "-jar", "app.jar"]

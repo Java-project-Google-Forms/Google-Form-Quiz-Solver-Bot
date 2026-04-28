@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import ru.spbstu.messagehandler.service.UserService;
+
 import static ru.spbstu.messagehandler.handler.MessageHandler.FORM_LINK_REGEX;
 
 /**
@@ -18,8 +20,10 @@ public class TelegramCommandRouter {
     private final FormSolvingService formSolving;
     private final HistoryService history;
     private final RequestStatusService requestStatus;
+    private final UserService userService; //
 
-    public String handleStart() {
+    public String handleStart(Long chatId, String firstName) {
+        userService.getOrCreateUser(chatId, firstName);
         return """
                 Привет! Я бот для автоматического решения Google‑форм.
                 

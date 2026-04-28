@@ -25,6 +25,11 @@ dependencies {
     implementation(libs.reactor.netty.http)
 
     // Spring Data MongoDB Reactive TODO Add MongoDB
+    // Spring Data MongoDB Reactive
+    implementation(libs.mongodb.driver.reactivestreams)
+    implementation(libs.spring.data.mongodb)
+    implementation(libs.mongodb.driver.core)
+    //implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
 
     // Spring Data MongoDB Reactive TODO
 
