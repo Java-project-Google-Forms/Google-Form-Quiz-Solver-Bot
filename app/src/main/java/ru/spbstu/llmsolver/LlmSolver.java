@@ -58,27 +58,27 @@ public class LlmSolver {
 
         try {
             Map<String, AnswerWithConfidence> answersWithConfidence = llmQuestionSolver.solveQuestions(llmQuestions)
-                    .block(Duration.ofMinutes(2)); // block because Kafka listener is synchronous
+                    .block(Duration.ofMinutes(2));
 
             if (answersWithConfidence == null) {
                 throw new RuntimeException("LLM solver returned null");
             }
 
-            Map<String, String> simpleAnswers = answersWithConfidence.entrySet().stream()
+            // Добавляем уверенность прямо в текст ответа
+            Map<String, String> answersWithConfidenceText = answersWithConfidence.entrySet().stream()
                     .collect(Collectors.toMap(
                             Map.Entry::getKey,
-                            e -> e.getValue().answer()
+                            e -> String.format("%s (уверенность: %d%%)", e.getValue().answer(), e.getValue().confidence())
                     ));
 
-            log.info("Solved requestId={}, answers count={}", requestId, simpleAnswers.size());
-            formSolvingProvider.submitResult(requestId, new SolvingResult(simpleAnswers));
+            log.info("Solved requestId={}, answers count={}", requestId, answersWithConfidenceText.size());
+            formSolvingProvider.submitResult(requestId, new SolvingResult(answersWithConfidenceText));
         } catch (Exception e) {
             log.error("LLM solving failed for requestId={}", requestId, e);
-            // Submit fallback answers to avoid hanging the requester
             Map<String, String> errorAnswers = structure.getQuestions().stream()
                     .collect(Collectors.toMap(
                             Question::getId,
-                            _ -> " Ошибка LLM:: " + e.getMessage()
+                            _ -> "❌ Ошибка LLM: " + e.getMessage()
                     ));
             formSolvingProvider.submitResult(requestId, new SolvingResult(errorAnswers));
         }
