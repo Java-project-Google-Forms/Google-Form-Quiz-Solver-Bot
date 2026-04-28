@@ -26,8 +26,6 @@ dependencies {
 
     // Spring Data MongoDB Reactive TODO Add MongoDB
 
-    // Spring Data MongoDB Reactive TODO
-
     // Spring Kafka
     implementation(libs.spring.kafka)
     implementation(libs.reactor.kafka)
@@ -44,17 +42,25 @@ dependencies {
     implementation(libs.slf4j.api)
     runtimeOnly(libs.logback.classic)
 
-    // Testing
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.spring.test)
-    testRuntimeOnly(libs.junit.platform.launcher)
-
     // Json parsing
     implementation(libs.jsoup)
 
     // Lombok
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
+
+
+    // Testing
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
+
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockito.junit.jupiter)
+    testImplementation(libs.reactor.test)
+    testImplementation(libs.spring.test)
+    testImplementation(libs.mockwebserver)
+    testRuntimeOnly(libs.junit.platform.launcher)
+    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 java {

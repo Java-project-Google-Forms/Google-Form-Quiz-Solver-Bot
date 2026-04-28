@@ -2,15 +2,23 @@ package ru.spbstu.messagehandler.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.spbstu.formsolving.service.api.FormSolvingService;
+import ru.spbstu.messagehandler.service.api.HistoryService;
+import ru.spbstu.messagehandler.service.api.RequestStatusService;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 
 import static ru.spbstu.messagehandler.handler.MessageHandler.FORM_LINK_REGEX;
 
 /**
- * Маршрутизатор команд Telegram.
- * Координирует вызовы других модулей (MongoDB, Kafka, GigaChat и т.д.)
+ * Routes Telegram commands to the appropriate underlying services
+ * (form solving, history, status).
+ * <p>
+ * Each method returns a plain text response that will be sent back to the user.
+ * </p>
  */
 @Component
 @RequiredArgsConstructor
@@ -19,6 +27,10 @@ public class TelegramCommandRouter {
     private final HistoryService history;
     private final RequestStatusService requestStatus;
 
+    /**
+     * Returns the welcome message with bot description and usage hints.
+     * @return formatted HTML text
+     */
     public String handleStart() {
         return """
                 Привет! Я бот для автоматического решения Google‑форм.
@@ -44,7 +56,8 @@ public class TelegramCommandRouter {
     }
 
     /**
-     * Обработка команды /help
+     * Returns help message listing all available commands.
+     * @return formatted HTML text
      */
     public String handleHelp() {
         return """
@@ -61,8 +74,9 @@ public class TelegramCommandRouter {
     }
 
     /**
-     * Обработка команды /myforms
-     * Показывает список форм/викторин пользователя
+     * Displays the user's saved forms.
+     * @param chatId Telegram chat identifier
+     * @return formatted list of forms or an error message
      */
     public String handleMyForms(Long chatId) {
         // TODO: получить из БД формы пользователя
@@ -70,11 +84,10 @@ public class TelegramCommandRouter {
     }
 
     /**
-     * Обработка команды /solve &lt;link to form&gt;
-     * Начинает решение формы по её идентификатору
-     *
-     * @param argument аргумент после /solve
-     * @param chatId   идентификатор чата
+     * Initiates solving of a Google Form and returns a confirmation.
+     * @param argument the raw argument (expected to contain the form URL)
+     * @param chatId   user's chat identifier
+     * @return confirmation or error text
      */
     public String handleSolve(String argument, Long chatId) {
         // TODO: инициировать процесс решения формы
@@ -95,11 +108,10 @@ public class TelegramCommandRouter {
     }
 
     /**
-     * Обработка команды /rescore &lt;formId&gt;
-     * Запрашивает пересчёт результатов формы
-     *
-     * @param argument аргумент после /rescore
-     * @param chatId   идентификатор чата
+     * Requests re‑evaluation of a previously solved form.
+     * @param argument the raw argument (integer formId)
+     * @param chatId   user's chat identifier
+     * @return acceptance message or error
      */
     public String handleRescore(String argument, Long chatId) {
         // TODO: отправить запрос на пересчёт
@@ -119,11 +131,10 @@ public class TelegramCommandRouter {
     }
 
     /**
-     * Обработка команды /history [период]
-     * Показывает историю ответов пользователя
-     *
-     * @param argument аргумент после /history (day/week/month/all или пусто)
-     * @param chatId   идентификатор чата
+     * Returns the user's answer history for a given time period.
+     * @param argument period (day, week, month, all) or empty
+     * @param chatId   user's chat identifier
+     * @return formatted history or error
      */
     public String handleHistory(String argument, Long chatId) {
         // TODO: получить историю из БД
@@ -141,11 +152,10 @@ public class TelegramCommandRouter {
     }
 
     /**
-     * Обработка команды /get_form &lt;formId&gt;
-     * Возвращает содержимое формы по ID
-     *
-     * @param argument аргумент после /get_form
-     * @param chatId   идентификатор чата
+     * Returns the full content of a previously solved form with answers.
+     * @param argument form UUID
+     * @param chatId   user's chat identifier
+     * @return formatted form content or error
      */
     public String handleGetForm(String argument, Long chatId) {
         // TODO: получить данные формы
@@ -161,11 +171,10 @@ public class TelegramCommandRouter {
     }
 
     /**
-     * Обработка команды /remove_form &lt;formId&gt;
-     * Удаляет форму пользователя
-     *
-     * @param argument аргумент после /remove_form
-     * @param chatId   идентификатор чата
+     * Removes a form from the user's saved list.
+     * @param argument form UUID
+     * @param chatId   user's chat identifier
+     * @result success or error message
      */
     public String handleRemoveForm(String argument, Long chatId) {
         // TODO: удалить форму из БД
@@ -181,29 +190,41 @@ public class TelegramCommandRouter {
     }
 
     /**
-     * Обработка команды /status &lt;formId&gt;
-     * Проверяет статус обработки формы
-     *
-     * @param argument аргумент после /status
-     * @param chatId   идентификатор чата
+     * Retrieves the current processing status of a request.
+     * @param argument request UUID
+     * @param chatId   user's chat identifier
+     * @return status text or error
      */
     public String handleStatus(String argument, Long chatId) {
-        // TODO: запросить статус через Kafka или из БД
         if (argument == null || argument.isBlank()) {
-            return "❌ Укажите ID формы: /status &lt;formId&gt;";
+            return "❌ Укажите ID запроса: /status <requestId>";
         }
-        try {
-            Integer requestId = Integer.parseInt(argument.trim());
-            return requestStatus.getStatus(chatId, requestId);
-        } catch (NumberFormatException e) {
-            return "❌ ID формы должен быть числом";
+        String requestId = argument.trim();
+        if (!isValidUuid(requestId)) {
+            return "❌ Неверный формат ID запроса.";
         }
+        return requestStatus.getStatus(chatId, requestId);
     }
 
     /**
-     * Обработка неизвестной команды
+     * Returns an error message for unrecognised commands.
+     * @return error text
      */
     public String handleUnknownCommand() {
         return "❓ Неизвестная команда! \nВведите /help для списка команд.";
+    }
+
+    /**
+     * Validates that a string can be parsed as a UUID.
+     * @param str string to validate
+     * @return true if valid UUID, false otherwise
+     */
+    private boolean isValidUuid(String str) {
+        try {
+            UUID.fromString(str);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

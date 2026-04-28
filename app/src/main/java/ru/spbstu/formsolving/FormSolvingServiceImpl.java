@@ -3,19 +3,36 @@ package ru.spbstu.formsolving;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import ru.spbstu.formsolving.entity.*;
+import ru.spbstu.formsolving.model.*;
 import ru.spbstu.formsolving.parser.FormatStructure;
 import ru.spbstu.formsolving.parser.GoogleFormsJsonParser;
 import ru.spbstu.formsolving.service.FormSolvingProvider;
 import ru.spbstu.formsolving.service.KafkaProducerService;
 import ru.spbstu.formsolving.service.ResultSender;
-import ru.spbstu.messagehandler.service.FormSolvingService;
+import ru.spbstu.formsolving.service.api.FormSolvingService;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+
+// TODO requestId should be stored in persistence not locally
+/**
+ * Main service that implements both the external {@link FormSolvingService}
+ * (called by the message handler) and the internal {@link FormSolvingProvider}
+ * (called by the LLM solver).
+ * <p>
+ * Responsibilities:
+ * <ul>
+ *   <li>Parse a Google Form using {@link GoogleFormsJsonParser}</li>
+ *   <li>Generate a unique UUID request ID</li>
+ *   <li>Store the request metadata in a local in‑memory cache</li>
+ *   <li>Send a Kafka task (synchronously with timeout) via {@link KafkaProducerService}</li>
+ *   <li>Upon result submission, deliver the answers back to the user via {@link ResultSender}</li>
+ * </ul>
+ * </p>
+ */
 @Slf4j
 @Service
 public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingProvider {
@@ -26,6 +43,13 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
 
     private final Map<String, FormTaskInfo> tasks = new ConcurrentHashMap<>();
 
+    /**
+     * Creates a new instance.
+     *
+     * @param parser          the HTML/JSON parser
+     * @param kafkaProducer   service for sending Kafka messages
+     * @param resultSender    service for delivering final answers to the user
+     */
     public FormSolvingServiceImpl(GoogleFormsJsonParser parser,
                                   KafkaProducerService kafkaProducer,
                                   @Lazy ResultSender resultSender) {
@@ -34,6 +58,19 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
         this.resultSender = resultSender;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This method parses the form, validates it, stores it in the local cache,
+     * and synchronously sends a Kafka task. Returns {@code true} only if the
+     * entire flow succeeds (including Kafka send). In case of any failure,
+     * an error message is sent to the user.
+     * </p>
+     *
+     * @param chatId Telegram chat ID
+     * @param link   Google Form URL
+     * @return {@code true} if the request was accepted and the Kafka task was sent
+     */
     @Override
     public boolean solveForm(Long chatId, String link) {
         try {
@@ -58,6 +95,18 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
         }
     }
 
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This is a stub implementation that always generates a new UUID and sends a RESCORE task.
+     * The actual rescore logic will be implemented when the database module is integrated.
+     * </p>
+     *
+     * @param chatId Telegram chat ID
+     * @param formId numeric form identifier (from database)
+     * @return {@code true} (always, unless an exception occurs)
+     */
     @Override
     public boolean rescoreForm(Long chatId, Integer formId) {
         String requestId = UUID.randomUUID().toString();
@@ -73,12 +122,33 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
 
     // === Реализация FormSolvingProvider ===
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Retrieves the cached form structure for the given request ID.
+     * </p>
+     *
+     * @param requestId UUID of the request
+     * @return Optional with the structure if the request is still in the local cache
+     */
     @Override
     public Optional<FormStructure> getFormStructure(String requestId) {
         FormTaskInfo info = tasks.get(requestId);
         return info != null ? Optional.of(info.structure()) : Optional.empty();
     }
 
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Removes the request from the local cache, builds a human‑readable message
+     * containing all questions and the generated answers, and sends it to the user
+     * via the {@link ResultSender}. Also marks the user's active request as finished.
+     * </p>
+     *
+     * @param requestId UUID of the request
+     * @param result    solving result with answers
+     */
     @Override
     public void submitResult(String requestId, SolvingResult result) {
         FormTaskInfo info = tasks.remove(requestId);

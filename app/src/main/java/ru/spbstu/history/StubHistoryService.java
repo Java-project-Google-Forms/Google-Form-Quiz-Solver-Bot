@@ -2,7 +2,7 @@ package ru.spbstu.history;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import ru.spbstu.messagehandler.service.HistoryService;
+import ru.spbstu.messagehandler.service.api.HistoryService;
 
 @Component
 @Profile("stub")

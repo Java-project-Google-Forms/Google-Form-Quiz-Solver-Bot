@@ -6,11 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import ru.spbstu.formsolving.entity.FormStructure;
-import ru.spbstu.formsolving.entity.Question;
+import ru.spbstu.formsolving.model.FormStructure;
+import ru.spbstu.formsolving.model.Question;
 import ru.spbstu.formsolving.service.FormSolvingProvider;
 
-import ru.spbstu.formsolving.entity.SolvingResult;
+import ru.spbstu.formsolving.model.SolvingResult;
 
 import java.util.HashMap;
 import java.util.Map;

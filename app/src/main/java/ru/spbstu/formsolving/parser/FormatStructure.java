@@ -1,12 +1,25 @@
 package ru.spbstu.formsolving.parser;
 
 import lombok.experimental.UtilityClass;
-import ru.spbstu.formsolving.entity.FormStructure;
-import ru.spbstu.formsolving.entity.Question;
-import ru.spbstu.formsolving.entity.QuestionType;
+import ru.spbstu.formsolving.model.FormStructure;
+import ru.spbstu.formsolving.model.Question;
+import ru.spbstu.formsolving.model.QuestionType;
 
+/**
+ * Utility class for converting a {@link FormStructure} into a formatted HTML message
+ * suitable for sending via Telegram.
+ */
 @UtilityClass
 public class FormatStructure {
+
+    /**
+     * Formats the form structure into an HTML message.
+     * Includes title, description, question texts, types, options, scale info, etc.
+     * Special HTML characters are escaped.
+     *
+     * @param structure the form structure
+     * @return HTML‑formatted string
+     */
     public static String formatStructureMessage(FormStructure structure) {
         StringBuilder sb = new StringBuilder();
         sb.append("📄 <b>").append(escapeHtml(structure.getTitle())).append("</b>\n");
@@ -85,6 +98,13 @@ public class FormatStructure {
         };
     }
 
+
+    /**
+     * Escapes XML/HTML special characters: {@code &, <, >, "} to their entity equivalents.
+     *
+     * @param text input string (may be null)
+     * @return escaped string, or empty string if input was null
+     */
     public static String escapeHtml(String text) {
         if (text == null) return "";
         return text.replace("&", "&amp;")

@@ -7,15 +7,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
-import ru.spbstu.formsolving.entity.FormStructure;
-import ru.spbstu.formsolving.entity.QuestionType;
-import ru.spbstu.formsolving.entity.Question;
+import ru.spbstu.formsolving.model.FormStructure;
+import ru.spbstu.formsolving.model.QuestionType;
+import ru.spbstu.formsolving.model.Question;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+/**
+ * Parses a public Google Form from its HTML page.
+ * Extracts the embedded {@code FB_PUBLIC_LOAD_DATA_} JSON, converts it into a
+ * {@link FormStructure} object.
+ * <p>Only works with publicly accessible forms.</p>
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -25,6 +32,14 @@ public class GoogleFormsJsonParser {
             Pattern.compile("var\\s+FB_PUBLIC_LOAD_DATA_\\s*=\\s*(\\[.*?]);\\s*</script>", Pattern.DOTALL);
     private final ObjectMapper objectMapper;
 
+
+    /**
+     * Downloads the form page and parses its structure.
+     *
+     * @param formUrl the full URL of the Google Form (e.g., "https://docs.google.com/forms/d/...")
+     * @return the parsed FormStructure
+     * @throws IOException if the page cannot be fetched or the JSON cannot be extracted
+     */
     public FormStructure parse(String formUrl) throws IOException {
         Document doc = Jsoup.connect(formUrl).userAgent("Mozilla/5.0").get();
         String html = doc.html();
@@ -223,6 +238,13 @@ public class GoogleFormsJsonParser {
         };
     }
 
+    /**
+     * Validates that the parsed form contains at least one supported question type.
+     * Forms with no questions or only unsupported question types are considered invalid.
+     *
+     * @param structure the form structure to validate
+     * @return true if the form contains at least one question of a supported type
+     */
     public boolean isValid(FormStructure structure) {
         if (structure.getQuestions() == null || structure.getQuestions().isEmpty()) return false;
         return structure.getQuestions().stream()

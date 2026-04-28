@@ -11,6 +11,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
+/**
+ * Handles raw Telegram messages, parses commands, and routes them to the appropriate
+ * method of {@link TelegramCommandRouter}.
+ * <p>
+ * This class is stateless and thread‑safe. It uses a switch expression with pattern
+ * matching to differentiate between commands and raw links.
+ * </p>
+ */
 @Component
 @RequiredArgsConstructor
 public class MessageHandler {
@@ -22,7 +30,11 @@ public class MessageHandler {
     );
     private final TelegramCommandRouter telegramCommandRouter;
 
-
+    /**
+     * Processes a single message and produces a SendMessage response.
+     * @param message the incoming Telegram message
+     * @return a SendMessage object ready to be executed by the bot
+     */
     public SendMessage handle(Message message) {
         Long chatId = message.getChatId();
         String text = message.getText();
