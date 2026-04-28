@@ -40,7 +40,6 @@ public class AdminController {
     public Map<String, Object> getUsers(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         Map<String, Object> response = new HashMap<>();
         
-        // Проверяем токен (формат: "Bearer <token>")
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             response.put("status", "error");
             response.put("message", "Missing or invalid Authorization header");
@@ -54,7 +53,6 @@ public class AdminController {
             return response;
         }
         
-        // Токен валиден — возвращаем список пользователей
         response.put("status", "success");
         response.put("users", "Список пользователей будет подключен позже (нужен UserService)");
         response.put("note", "Токен валиден, можно возвращать данные");

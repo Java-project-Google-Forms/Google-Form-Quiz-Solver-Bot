@@ -1,6 +1,7 @@
 package ru.spbstu.adminauth;
 
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -24,9 +25,9 @@ public class AdminAuthService {
         }
     }
     
-    public boolean authenticate(String username, String password) {
-        return adminRepository.findByUsername(username)
-            .map(admin -> admin.getPasswordHash().equals(hashPassword(password)))
-            .orElse(false);
+    public Mono<Boolean> authenticate(String login, String password) {
+        return adminRepository.findByLogin(login)
+            .map(admin -> admin.getPassSHA().equals(hashPassword(password)))
+            .defaultIfEmpty(false);
     }
 }
