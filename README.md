@@ -92,33 +92,6 @@ JWT_SECRET=случайная_длинная_строка
 
 ## 🚀 Запуск приложения
 
-### Локальный запуск
-
-```bash
-git clone https://github.com/Java-project-Google-Forms/Google-Form-Quiz-Solver-Bot.git
-cd Google-Form-Quiz-Solver-Bot
-```
-
-#### 1. Экспорт переменных окружения (Windows – set, Linux – export)
-```bash
-set TELEGRAM_BOT_TOKEN=...
-```
-
-#### 2. Сборка fat‑JAR
-Выполните команду в корне проекта:
-
-```bash
-./gradlew :app:shadowJar
-```
-
-#### 3. Запуск
-
-```bash
-java -jar app/build/libs/app.jar
-```
-
-### Запуск через Docker Compose
-
 Убедитесь, что файл .env создан.
 
 #### 1. Сборка и запуск всех сервисов.
@@ -143,67 +116,62 @@ docker compose down
 
 ## 🖼 Пример взаимодействия с ботом
 
-- Отправьте боту ссылку на Google Форму:
+- Команда /start
 
-```user
-/solve https://forms.gle/example
-```
-Ответ:
+<img width="658" height="804" alt="image" src="https://github.com/user-attachments/assets/1a962343-2950-4913-bdfd-34461953fcbe" />
 
-```bot
-✅ Форма принята в обработку. ID запроса: 550e8400-e29b-41d4-a716-446655440000
-```
 
-- Через некоторое время бот пришлёт результат:
+- Команда /help
 
-```bot
-✅ Результат решения формы "Тест по географии":
+<img width="654" height="302" alt="image" src="https://github.com/user-attachments/assets/dc72bae6-0be6-4453-90d4-d7e4b642478d" />
 
-1. Столица Франции:
-   ▶ Париж (уверенность: 100%)
 
-2. Введите вашу фамилию:
-   ▶ В этом вопросе запрашиваются личные данные. Пожалуйста, ответьте вручную. (уверенность: 0%)
-```
+- Команда /history
 
-- Проверить статус длительного запроса:
+<img width="662" height="414" alt="image" src="https://github.com/user-attachments/assets/0dab3db8-6c0e-4ad1-a8f4-b2b80186cf94" />
 
-```user
-/status 550e8400-e29b-41d4-a716-446655440000
-```
+- Команда /myforms
 
-```bot
-Статус: Завершен
-```
+<img width="657" height="407" alt="image" src="https://github.com/user-attachments/assets/80547fce-d164-44dc-9367-43afce38bdde" />
 
----
+- Команда /solve <link to form>
+
+<img width="654" height="822" alt="image" src="https://github.com/user-attachments/assets/25b38ce8-2172-4cf2-b539-99a5e0f3c08d" />
+
+- Команда /get_form <formId>
+
+<img width="651" height="333" alt="image" src="https://github.com/user-attachments/assets/e8532a75-043a-4153-92cf-2a903773b885" />
+
+- Команда /status <requestId>
+
+  <img width="626" height="150" alt="image" src="https://github.com/user-attachments/assets/83debf25-41cc-4257-b537-3577bf30d69b" />
+
+- Команда /rescore <formId>
+
+<img width="628" height="450" alt="image" src="https://github.com/user-attachments/assets/136afdd4-4315-413f-aa8b-f6ca3759aed3" />
+
+- Команда /remove_form <formId>
+
+
+
+
+
 
 ## 🔌 HTTP эндпоинты (администрирование)
 
-- GET /healthcheck
+- http://localhost:8080/healthcheck
 
-Пример ответа:
+<img width="469" height="427" alt="image" src="https://github.com/user-attachments/assets/2fae2200-3938-490a-b3f7-41593b1f79f5" />
 
-```json
-{
-  "status": "UP",
-  "authors": ["Янковский Э.", "Мелещенко С.", "Гордиенко Ю.", "Волнухина В."]
-}
-```
+- http://localhost:8080/auth?login=admin&pass=admin123
 
-- POST /auth – получение API‑ключа
+<img width="675" height="86" alt="image" src="https://github.com/user-attachments/assets/24d937c2-e11c-4d5e-8d50-6b41331b196b" />
 
-```bash
-curl -X POST http://localhost:8080/auth -d "login=admin&password=admin"
-```
+- http://localhost:8080/users?key=19a09026-9ce4-4b67-ab62-c96571a56beb
 
-- GET /users – список пользователей (требуется Bearer‑токен)
+<img width="478" height="698" alt="image" src="https://github.com/user-attachments/assets/ff25cec1-fd34-4c40-bedd-c6dd06b0bffc" />
 
-```bash
-curl -H "Authorization: Bearer <полученный_токен>" http://localhost:8080/users
-```
 
----
 
 ## 📁 Структура проекта (основные модули)
 
