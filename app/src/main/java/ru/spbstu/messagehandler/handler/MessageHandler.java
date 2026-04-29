@@ -24,9 +24,9 @@ import java.util.regex.Pattern;
 public class MessageHandler {
 
     public static final Pattern FORM_LINK_REGEX = Pattern.compile(
-            "^(https?:\\/\\/)?(www\\.)?(docs\\.google\\.com\\/(u\\/\\d\\/)?" +
+            "(https?:\\/\\/)?(www\\.)?(docs\\.google\\.com\\/(u\\/\\d\\/)?" +
                     "forms\\/d\\/(e\\/)?[a-zA-Z0-9_-]+(\\/viewform)?|forms\\.gle\\/" +
-                    "[a-zA-Z0-9_-]+)(\\?.*)?$"
+                    "[a-zA-Z0-9_-]+)(\\?.*)?"
     );
     private final TelegramCommandRouter telegramCommandRouter;
 
@@ -79,7 +79,7 @@ public class MessageHandler {
             default:
                 Matcher matcher = FORM_LINK_REGEX.matcher(text);
                 if (matcher.find()) {
-                    responseText = telegramCommandRouter.handleSolve(matcher.group(), chatId);
+                    responseText = telegramCommandRouter.handleSolve(matcher.group().trim(), chatId);
                 } else {
                     responseText = telegramCommandRouter.handleUnknownCommand();
                 }
