@@ -142,6 +142,16 @@ docker compose down
 
 <img width="651" height="333" alt="image" src="https://github.com/user-attachments/assets/e8532a75-043a-4153-92cf-2a903773b885" />
 
+- Команда /status <requestId>
+
+  <img width="626" height="150" alt="image" src="https://github.com/user-attachments/assets/83debf25-41cc-4257-b537-3577bf30d69b" />
+
+- Команда /rescore <formId>
+
+<img width="628" height="450" alt="image" src="https://github.com/user-attachments/assets/136afdd4-4315-413f-aa8b-f6ca3759aed3" />
+
+- Команда /remove_form <formId>
+
 
 
 
