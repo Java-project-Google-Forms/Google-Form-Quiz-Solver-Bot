@@ -6,6 +6,6 @@ package ru.spbstu.formsolving.model;
  * UNSUPPORTED is used for types that cannot be processed (e.g., file upload).
  */
 public enum QuestionType {
-    TEXT, PARAGRAPH, DATE, TIME, LINEAR_SCALE, DROP_DOWN,
-    MULTIPLE_CHOICE, CHECKBOX, UNSUPPORTED
+    TEXT, PARAGRAPH, MULTIPLE_CHOICE, DROP_DOWN, CHECKBOX, LINEAR_SCALE, GRID, DATE,
+    TIME, IMAGE, VIDEO, FILE_UPLOAD, UNSUPPORTED
 }

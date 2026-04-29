@@ -232,8 +232,12 @@ public class GoogleFormsJsonParser {
             case 3 -> QuestionType.DROP_DOWN;
             case 4 -> QuestionType.CHECKBOX;
             case 5 -> QuestionType.LINEAR_SCALE;
+            case 7 -> QuestionType.GRID;
             case 9 -> QuestionType.DATE;
             case 10 -> QuestionType.TIME;
+            case 11 -> QuestionType.IMAGE;
+            case 12 -> QuestionType.VIDEO;
+            case 13 -> QuestionType.FILE_UPLOAD;
             default -> QuestionType.UNSUPPORTED;
         };
     }

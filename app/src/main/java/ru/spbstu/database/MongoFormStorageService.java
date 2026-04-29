@@ -10,16 +10,11 @@ import ru.spbstu.database.document.RequestStatusDocument;
 import ru.spbstu.database.repository.FormRepository;
 import ru.spbstu.database.repository.RequestStatusRepository;
 import ru.spbstu.database.repository.UserRepository;
-import ru.spbstu.formsolving.model.FormStructure;
-import ru.spbstu.formsolving.model.QuestionType;
 import ru.spbstu.messagehandler.service.FormStorageService;
 import ru.spbstu.database.document.UserDocument;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Component
 @Profile("mongo")
