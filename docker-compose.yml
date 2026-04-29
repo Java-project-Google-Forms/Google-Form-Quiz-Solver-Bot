@@ -5,14 +5,27 @@ services:
     ports:
       - "${APP_PORT:-8080}:8080"
     environment:
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      GIGACHAT_API_KEY: ${GIGACHAT_API_KEY}
-      JWT_SECRET: ${JWT_SECRET}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      - SPRING_PROFILES_ACTIVE=mongo
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - GIGACHAT_API_KEY=${GIGACHAT_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/quiz_bot
     restart: unless-stopped
     depends_on:
       kafka:
         condition: service_healthy
+      mongodb:
+        condition: service_started
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
 
   kafka:
     image: confluentinc/cp-kafka:7.4.0
@@ -41,3 +54,6 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+
+volumes:
+  mongo_data:

@@ -10,12 +10,23 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+/**
+ * Registers the Telegram bot with the Telegram API on application startup.
+ * <p>
+ * Listens to Spring's {@link ContextRefreshedEvent} and registers the bot
+ * using long‑polling session. Logs success or failure.
+ * </p>
+ */
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class BotInitializer {
     private final QuizTelegramBot quizBot;
 
+    /**
+     * Registers the bot with the Telegram API using long-polling.
+     * Called automatically after the Spring context is fully initialized.
+     */
     @EventListener(ContextRefreshedEvent.class)
     public void init() {
         try {

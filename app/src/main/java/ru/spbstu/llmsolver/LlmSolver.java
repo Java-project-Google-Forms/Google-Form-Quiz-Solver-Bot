@@ -6,17 +6,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import ru.spbstu.formsolving.entity.FormStructure;
-import ru.spbstu.formsolving.entity.Question;
-import ru.spbstu.formsolving.entity.SolvingResult;
+import ru.spbstu.formsolving.model.FormStructure;
+import ru.spbstu.formsolving.model.Question;
+import ru.spbstu.formsolving.model.SolvingResult;
 import ru.spbstu.formsolving.service.FormSolvingProvider;
+import ru.spbstu.llmsolver.client.GigaChatClient;
 import ru.spbstu.llmsolver.service.LLMQuestionSolver;
 import ru.spbstu.llmsolver.service.LLMQuestionSolver.AnswerWithConfidence;
 
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.LongConsumer;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -26,6 +29,7 @@ public class LlmSolver {
 
     private final FormSolvingProvider formSolvingProvider;
     private final LLMQuestionSolver llmQuestionSolver;
+    private final GigaChatClient gigaChatClient;
     private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "form-solving-requests", groupId = "llm-solver-group")
@@ -56,37 +60,53 @@ public class LlmSolver {
         FormStructure structure = optStructure.get();
         List<LLMQuestionSolver.Question> llmQuestions = convertToLlmQuestions(structure.getQuestions());
 
+        int maxAttempts = gigaChatClient.getMaxAttempts();
+        LongConsumer onRetry = attempt ->
+                formSolvingProvider.notifyProgress(requestId,
+                        String.format("⏳ Попытка %d не удалась, пробуем ещё раз (всего попыток: %d)…",
+                                attempt, maxAttempts));
+
         try {
-            Map<String, AnswerWithConfidence> answersWithConfidence = llmQuestionSolver.solveQuestions(llmQuestions)
-                    .block(Duration.ofMinutes(2)); // block because Kafka listener is synchronous
+            Map<String, AnswerWithConfidence> answersWithConfidence =
+                    llmQuestionSolver.solveQuestions(llmQuestions, onRetry)
+                            .block(Duration.ofMinutes(2));
 
             if (answersWithConfidence == null) {
                 throw new RuntimeException("LLM solver returned null");
             }
 
-            Map<String, String> simpleAnswers = answersWithConfidence.entrySet().stream()
+            Map<String, String> answersWithConfidenceText = answersWithConfidence.entrySet().stream()
                     .collect(Collectors.toMap(
                             Map.Entry::getKey,
-                            e -> e.getValue().answer()
+                            e -> String.format("%s (уверенность: %d%%)", e.getValue().answer(), e.getValue().confidence()),
+                            (a, b) -> a,
+                            LinkedHashMap::new
                     ));
 
-            log.info("Solved requestId={}, answers count={}", requestId, simpleAnswers.size());
-            formSolvingProvider.submitResult(requestId, new SolvingResult(simpleAnswers));
+            log.info("Solved requestId={}, answers count={}", requestId, answersWithConfidenceText.size());
+            formSolvingProvider.submitResult(requestId, new SolvingResult(answersWithConfidenceText));
         } catch (Exception e) {
             log.error("LLM solving failed for requestId={}", requestId, e);
-            // Submit fallback answers to avoid hanging the requester
-            Map<String, String> errorAnswers = structure.getQuestions().stream()
-                    .collect(Collectors.toMap(
-                            Question::getId,
-                            _ -> " Ошибка LLM:: " + e.getMessage()
-                    ));
+            formSolvingProvider.notifyProgress(requestId,
+                    "❌ Не удалось получить ответ от LLM: " + e.getMessage()
+                            + "\nПопробуйте отправить форму ещё раз позже.");
+            Map<String, String> errorAnswers = buildErrorAnswers(structure, e.getMessage());
             formSolvingProvider.submitResult(requestId, new SolvingResult(errorAnswers));
         }
     }
 
+    private Map<String, String> buildErrorAnswers(FormStructure structure, String errorMsg) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        int idx = 0;
+        for (Question q : structure.getQuestions()) {
+            String key = q.getId() != null ? q.getId() : "q" + idx;
+            errors.put(key, "❌ Ошибка LLM: " + errorMsg);
+            idx++;
+        }
+        return errors;
+    }
+
     private void processRescore(String requestId) {
-        // Rescore uses the same logic – just solve again.
-        // If needed, you could add special handling (e.g., different prompt).
         log.info("Processing rescore requestId={}", requestId);
         processSolve(requestId);
     }
