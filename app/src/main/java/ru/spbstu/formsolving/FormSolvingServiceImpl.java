@@ -159,6 +159,16 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
         return info != null ? Optional.of(info.structure()) : Optional.empty();
     }
 
+    @Override
+    public void notifyProgress(String requestId, String message) {
+        FormTaskInfo info = tasks.get(requestId);
+        if (info == null) {
+            log.warn("notifyProgress: no task for requestId={}", requestId);
+            return;
+        }
+        resultSender.sendResult(info.chatId(), message);
+    }
+
 
     /**
      * {@inheritDoc}

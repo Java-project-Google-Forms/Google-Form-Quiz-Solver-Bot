@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import ru.spbstu.formsolving.model.FormStructure;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Component
+@Profile("stub-llm")
 public class StubLlmSolver {
 
     private static final Logger log = LoggerFactory.getLogger(StubLlmSolver.class);

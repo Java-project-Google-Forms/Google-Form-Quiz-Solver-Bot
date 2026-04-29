@@ -27,4 +27,11 @@ public interface FormSolvingProvider {
      * @param result    generated answers
      */
     void submitResult(String requestId, SolvingResult result);
+
+    /**
+     * Sends an interim progress message to the user who originated the request
+     * (e.g., to notify about retry attempts during LLM processing).
+     * Silently no-ops if the request is no longer tracked.
+     */
+    void notifyProgress(String requestId, String message);
 }

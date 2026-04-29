@@ -15,6 +15,7 @@ import ru.spbstu.llmsolver.config.LlmConfig;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.function.LongConsumer;
 
 @Slf4j
 @Component
@@ -38,13 +39,23 @@ public class GigaChatClient implements LanguageModelClient {
 
     @Override
     public Mono<String> ask(String prompt) {
+        return ask(prompt, attempt -> {});
+    }
+
+    @Override
+    public Mono<String> ask(String prompt, LongConsumer onRetry) {
         return tokenProvider.getAccessToken()
                 .flatMap(token -> sendChatRequest(prompt, token))
                 .retryWhen(Retry.backoff(maxAttempts, Duration.ofSeconds(1))
                         .maxBackoff(Duration.ofSeconds(10))
                         .filter(throwable -> throwable instanceof java.util.concurrent.TimeoutException
-                                || throwable instanceof java.net.ConnectException))
+                                || throwable instanceof java.net.ConnectException)
+                        .doBeforeRetry(rs -> onRetry.accept(rs.totalRetries() + 1)))
                 .onErrorMap(e -> new RuntimeException("LLM request failed after " + maxAttempts + " attempts", e));
+    }
+
+    public int getMaxAttempts() {
+        return maxAttempts;
     }
 
     private Mono<String> sendChatRequest(String prompt, String token) {

@@ -107,10 +107,8 @@ public class MongoFormStorageService implements FormStorageService {
 
     public FormStructure getFormStructure(Long chatId, String formId) throws NoSuchFieldException {
         FormDocument formDocument =
-                formRepository.findByOwnerIdAndFormId((Integer) chatId.intValue(),
+                formRepository.findByOwnerIdAndFormId(Math.abs(chatId.intValue()),
                 formId).block();
-        // TODO REMOVE
-        System.out.println("THIS IS GET FORM_STRUCTURE test:"+ chatId.intValue() + " "+ formId);
 
         if (formDocument == null) throw new NoSuchFieldException();
 

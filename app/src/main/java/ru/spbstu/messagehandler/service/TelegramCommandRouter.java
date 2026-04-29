@@ -34,7 +34,8 @@ public class TelegramCommandRouter {
      * Returns the welcome message with bot description and usage hints.
      * @return formatted HTML text
      */
-    public String handleStart() {
+    public String handleStart(Long chatId, String name) {
+    	userService.getOrCreateUser(chatId, name);
         return """
                 Привет! Я бот для автоматического решения Google‑форм.
                 
