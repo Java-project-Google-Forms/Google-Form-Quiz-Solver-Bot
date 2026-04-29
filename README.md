@@ -159,6 +159,18 @@ docker compose down
 
 ## 🔌 HTTP эндпоинты (администрирование)
 
+- http://localhost:8080/healthcheck
+
+<img width="469" height="427" alt="image" src="https://github.com/user-attachments/assets/2fae2200-3938-490a-b3f7-41593b1f79f5" />
+
+- http://localhost:8080/auth?login=admin&pass=admin123
+
+<img width="675" height="86" alt="image" src="https://github.com/user-attachments/assets/24d937c2-e11c-4d5e-8d50-6b41331b196b" />
+
+- http://localhost:8080/users?key=19a09026-9ce4-4b67-ab62-c96571a56beb
+
+<img width="478" height="698" alt="image" src="https://github.com/user-attachments/assets/ff25cec1-fd34-4c40-bedd-c6dd06b0bffc" />
+
 
 
 ## 📁 Структура проекта (основные модули)
