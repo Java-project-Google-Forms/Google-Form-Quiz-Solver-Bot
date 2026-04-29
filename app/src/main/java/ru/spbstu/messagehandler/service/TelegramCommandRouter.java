@@ -191,24 +191,28 @@ public class TelegramCommandRouter {
     }
 
     /**
-     * Retrieves the current processing status of a request.
-     * @param argument request UUID
-     * @param chatId   user's chat identifier
-     * @return status text or error
-     */
-    public String handleStatus(String argument, Long chatId) {
-        if (argument == null || argument.isBlank()) {
-            return "❌ Укажите ID запроса: /status <requestId>";
-        }
-
-        try {
-            String requestId = argument.trim();
-            // Просто возвращаем то, что дает сервис, так как он возвращает String
-            return requestStatus.getStatus(chatId, requestId);
-        } catch (Exception e) {
-            return "❌ Ошибка при получении статуса: " + e.getMessage();
-        }
+ * Retrieves the current processing status of a request.
+ * @param argument request UUID
+ * @param chatId   user's chat identifier
+ * @return status text or error
+ */
+public String handleStatus(String argument, Long chatId) {
+    if (argument == null || argument.isBlank()) {
+        return "❌ Укажите ID запроса: /status &lt;requestId&gt;";
     }
+
+    String requestId = argument.trim();
+    if (!isValidUuid(requestId)) {
+        return "❌ ID запроса неправильного формата";
+    }
+
+    try {
+        // Просто возвращаем то, что дает сервис, так как он возвращает String
+        return requestStatus.getStatus(chatId, requestId);
+    } catch (Exception e) {
+        return "❌ Ошибка при получении статуса: " + e.getMessage();
+    }
+}
 
     /**
      * Returns an error message for unrecognised commands.
