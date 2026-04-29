@@ -137,7 +137,7 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
             }
 
             String requestId = storageService.createRequest(chatId);
-            tasks.put(requestId, new FormTaskInfo(chatId, "", structure));
+            tasks.put(requestId, new FormTaskInfo(chatId, link, structure));
 
             // Отправляем в Kafka только requestId (неблокирующе)
             kafkaProducer.sendSolveTask(requestId);
