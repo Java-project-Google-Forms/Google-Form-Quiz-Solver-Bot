@@ -1,6 +1,7 @@
 package ru.spbstu.formsolving;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.HttpStatusException;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import ru.spbstu.formsolving.model.*;
@@ -17,7 +18,6 @@ import ru.spbstu.messagehandler.service.FormStorageService;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -83,7 +83,7 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
     public boolean solveForm(Long chatId, String link) {
         try {
             FormStructure structure = parser.parse(link);
-            if (!parser.isValid(structure)) {
+            if (parser.isNotValid(structure)) {
                 resultSender.sendResult(chatId, "❌ Форма содержит неподдерживаемые типы вопросов или не содержит вопросов.");
                 return false;
             }
@@ -94,8 +94,19 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
             kafkaProducer.sendSolveTask(requestId);
 
             // Отправляем пользователю подтверждение
-            resultSender.sendResult(chatId, "✅ Форма принята в обработку. ID запроса: " + requestId);
+            resultSender.sendResult(chatId,
+                    "✅ Форма принята в обработку. ID запроса: <code>" + requestId + "</code>");
             return true;
+        } catch (HttpStatusException e) {
+            if (e.getStatusCode() == 401) {
+                resultSender.sendResult(chatId, "❌ Форма по ссылке недоступна для публичного " +
+                        "доступа.");
+                log.error("form by link is not public", e);
+            } else {
+                resultSender.sendResult(chatId, "❌ Не удалось получить форму по ссылке.");
+                log.error("http status exception when trying to get form by link", e);
+            }
+            return false;
         } catch (Exception e) {
             resultSender.sendResult(chatId, "❌ Ошибка при обработке ссылки: " + e.getMessage());
             log.error("solveForm failed", e);
@@ -120,7 +131,7 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
         try {
             String link = storageService.getFormLink(chatId, formId);
             FormStructure structure = parser.parse(link);
-            if (!parser.isValid(structure)) {
+            if (parser.isNotValid(structure)) {
                 resultSender.sendResult(chatId, "❌ Ошибка чтения формы по id:." + formId + ".");
                 return false;
             }
@@ -132,7 +143,8 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
             kafkaProducer.sendSolveTask(requestId);
 
             // Отправляем пользователю подтверждение
-            resultSender.sendResult(chatId, "✅ Форма принята в обработку. ID запроса: " + requestId);
+            resultSender.sendResult(chatId,
+                    "✅ Форма принята в обработку. ID запроса: <code>" + requestId + "</code>");
             return true;
 
         } catch (NoSuchFieldException e) {

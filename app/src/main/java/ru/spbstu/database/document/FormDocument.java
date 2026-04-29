@@ -1,11 +1,15 @@
 package ru.spbstu.database.document;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+@Setter
+@Getter
 @Document(collection = "Forms")
 public class FormDocument {
 
@@ -30,24 +34,4 @@ public class FormDocument {
     @Field("questions")
     private List<QuestionDocument> questions = new ArrayList<>();
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-
-    public Integer getOwnerId() { return ownerId; }
-    public void setOwnerId(Integer ownerId) { this.ownerId = ownerId; }
-
-    public String getFormId() { return formId; }
-    public void setFormId(String formId) { this.formId = formId; }
-
-    public String getFormLink() { return formLink; }
-    public void setFormLink(String formLink) { this.formLink = formLink; }
-
-    public String getFormName() { return formName; }
-    public void setFormName(String formName) { this.formName = formName; }
-
-    public boolean isSolved() { return isSolved; }
-    public void setSolved(boolean solved) { isSolved = solved; }
-
-    public List<QuestionDocument> getQuestions() { return questions; }
-    public void setQuestions(List<QuestionDocument> questions) { this.questions = questions; }
 }

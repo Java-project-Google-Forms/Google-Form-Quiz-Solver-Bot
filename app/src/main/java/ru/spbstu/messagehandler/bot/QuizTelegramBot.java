@@ -1,6 +1,5 @@
 package ru.spbstu.messagehandler.bot;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import ru.spbstu.messagehandler.config.BotConfig;

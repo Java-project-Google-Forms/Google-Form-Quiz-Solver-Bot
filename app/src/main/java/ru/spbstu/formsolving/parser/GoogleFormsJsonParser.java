@@ -249,9 +249,9 @@ public class GoogleFormsJsonParser {
      * @param structure the form structure to validate
      * @return true if the form contains at least one question of a supported type
      */
-    public boolean isValid(FormStructure structure) {
-        if (structure.getQuestions() == null || structure.getQuestions().isEmpty()) return false;
+    public boolean isNotValid(FormStructure structure) {
+        if (structure.getQuestions() == null || structure.getQuestions().isEmpty()) return true;
         return structure.getQuestions().stream()
-                .anyMatch(q -> q.getType() != QuestionType.UNSUPPORTED);
+                .noneMatch(q -> q.getType() != QuestionType.UNSUPPORTED);
     }
 }

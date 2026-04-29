@@ -1,6 +1,7 @@
 package ru.spbstu.llmsolver.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -23,6 +24,7 @@ public class GigaChatClient implements LanguageModelClient {
     private final WebClient chatWebClient;
     private final TokenProvider tokenProvider;
     private final Duration timeout;
+    @Getter
     private final int maxAttempts;
 
     public GigaChatClient(LlmConfig config, TokenProvider tokenProvider, HttpClient httpClient) {
@@ -48,14 +50,8 @@ public class GigaChatClient implements LanguageModelClient {
                 .flatMap(token -> sendChatRequest(prompt, token))
                 .retryWhen(Retry.backoff(maxAttempts, Duration.ofSeconds(1))
                         .maxBackoff(Duration.ofSeconds(10))
-                        .filter(throwable -> throwable instanceof java.util.concurrent.TimeoutException
-                                || throwable instanceof java.net.ConnectException)
                         .doBeforeRetry(rs -> onRetry.accept(rs.totalRetries() + 1)))
                 .onErrorMap(e -> new RuntimeException("LLM request failed after " + maxAttempts + " attempts", e));
-    }
-
-    public int getMaxAttempts() {
-        return maxAttempts;
     }
 
     private Mono<String> sendChatRequest(String prompt, String token) {

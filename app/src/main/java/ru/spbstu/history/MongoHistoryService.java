@@ -13,7 +13,6 @@ import ru.spbstu.messagehandler.service.api.HistoryService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @Profile("mongo")
@@ -62,7 +61,7 @@ public class MongoHistoryService implements HistoryService {
 		    };
                     List<HistoryEntryDocument> filtered = history.stream()
                             .filter(e -> e.getSolvedDate() != null && e.getSolvedDate().isAfter(from))
-                            .collect(Collectors.toList());
+                            .toList();
                     if (filtered.isEmpty()) {
                         return "📜 За выбранный период записей нет.";
                     }
@@ -70,7 +69,7 @@ public class MongoHistoryService implements HistoryService {
 		    for (HistoryEntryDocument e : filtered) {
     			sb.append("• requestId=<code>").append(e.getFormId()).append("</code>")
       			  .append(", статус=").append(formatStatus(e.getStatus()))
-      			  .append(", дата=").append(e.getSolvedDate().toString().substring(0, 10))
+      			  .append(", дата=").append(e.getSolvedDate().toString(), 0, 10)
       			  .append("\n");
 		    }
                     return sb.toString();
