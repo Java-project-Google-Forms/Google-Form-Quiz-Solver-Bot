@@ -105,48 +105,9 @@ public class MongoFormStorageService implements FormStorageService {
                 }).block();
     }
 
-    public FormStructure getFormStructure(Long chatId, String formId) throws NoSuchFieldException {
-        FormDocument formDocument =
-                formRepository.findByOwnerIdAndFormId(Math.abs(chatId.intValue()),
-                formId).block();
-
+    public String getFormLink(Long chatId, String formId) throws NoSuchFieldException {
+        FormDocument formDocument = formRepository.findByOwnerIdAndFormId(chatId.intValue(), formId).block();
         if (formDocument == null) throw new NoSuchFieldException();
-
-        return toFormStructure(formDocument);
-
-    }
-
-    public FormStructure toFormStructure(FormDocument formDocument) {
-        if (formDocument.getQuestions() == null) {
-            return new FormStructure(formDocument.getFormName(), "", List.of());
-        }
-        List<ru.spbstu.formsolving.model.Question> modelQuestions = formDocument.getQuestions().stream()
-                .map(qDoc -> {
-                    ru.spbstu.formsolving.model.Question q = new ru.spbstu.formsolving.model.Question();
-                    q.setTitle(qDoc.getBody());
-                    q.setType(parseType(qDoc.getType()));
-                    // остальные поля (required, options, scale и т.д.) не сохраняются в БД, поэтому остаются null/значения по умолчанию
-                    q.setRequired(false);
-                    q.setOptions(null);
-                    q.setShuffle(false);
-                    q.setScale(null);
-                    q.setGrid(null);
-                    q.setDate(null);
-                    q.setTime(null);
-                    q.setId(null);
-                    q.setDescription(null);
-                    return q;
-                })
-                .collect(Collectors.toList());
-        return new FormStructure(formDocument.getFormName(), "", modelQuestions);
-    }
-
-    private static QuestionType parseType(String typeStr) {
-        if (typeStr == null) return QuestionType.UNSUPPORTED;
-        try {
-            return QuestionType.valueOf(typeStr.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return QuestionType.UNSUPPORTED;
-        }
+        return formDocument.getFormLink();
     }
 }

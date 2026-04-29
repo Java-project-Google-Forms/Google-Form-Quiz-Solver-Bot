@@ -117,9 +117,13 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
      */
     @Override
     public boolean rescoreForm(Long chatId, String formId) {
-        FormStructure structure = null;
         try {
-            structure = storageService.getFormStructure(chatId, formId);
+            String link = storageService.getFormLink(chatId, formId);
+            FormStructure structure = parser.parse(link);
+            if (!parser.isValid(structure)) {
+                resultSender.sendResult(chatId, "❌ Ошибка чтения формы по id:." + formId + ".");
+                return false;
+            }
 
             String requestId = storageService.createRequest(chatId);
             tasks.put(requestId, new FormTaskInfo(chatId, "", structure));

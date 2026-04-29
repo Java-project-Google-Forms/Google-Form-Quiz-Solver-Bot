@@ -12,5 +12,5 @@ public interface FormStorageService {
     String createRequest(Long chatId);
     void finalizeRequest(Long chatId);
 
-    FormStructure getFormStructure(Long chatId, String formId) throws NoSuchFieldException;
+    String getFormLink(Long chatId, String formId) throws NoSuchFieldException;
 }
