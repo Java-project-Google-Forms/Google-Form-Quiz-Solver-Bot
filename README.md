@@ -189,7 +189,7 @@ java -jar app\build\libs\app.jar
 
 - Команда /solve <link to form>
 
-<img width="654" height="822" alt="image" src="https://github.com/user-attachments/assets/25b38ce8-2172-4cf2-b539-99a5e0f3c08d" />
+<img width="626" height="656" alt="image" src="https://github.com/user-attachments/assets/51d515e6-f546-4c7a-9b0b-60ac4110eefd" />
 
 - Команда /get_form <formId>
 
@@ -204,6 +204,8 @@ java -jar app\build\libs\app.jar
 <img width="628" height="450" alt="image" src="https://github.com/user-attachments/assets/136afdd4-4315-413f-aa8b-f6ca3759aed3" />
 
 - Команда /remove_form <formId>
+
+<img width="624" height="117" alt="image" src="https://github.com/user-attachments/assets/da502189-4273-407c-a71b-18fda25ab7ba" />
 
 
 
