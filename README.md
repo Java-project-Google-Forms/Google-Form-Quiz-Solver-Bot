@@ -1,6 +1,5 @@
 # 🤖 Google Form Quiz Solver Bot
-Telegram‑бот для автоматического решения Google‑форм с помощью LLM (GigaChat).  
-Выполнен в рамках курсовой работы.
+Telegram‑бот для автоматического решения Google‑форм с помощью LLM (GigaChat).
 
 
 Документы с подробным описанием требований и архитектуры находятся в каталоге [`docs/`](docs/).
@@ -12,7 +11,7 @@ Telegram‑бот для автоматического решения Google‑
 
 
 ## 🔗 Ссылки
-- **Docker Hub образ**: [docker.io](///TO DO)
+- **Docker Hub образ**: [docker.io](https://hub.docker.com/r/derikey/google-form-quiz-bot)
 
 - **Telegram бот**: [QuizSolverBot](https://t.me/formsolverbot)
 
@@ -20,47 +19,46 @@ Telegram‑бот для автоматического решения Google‑
 
 ## 📋 Технологический стек
 
-- **Язык**: Java 25  
-- **Фреймворк**: Spring 7 (WebFlux, Data MongoDB Reactive, Modulith)  
-- **База данных**: MongoDB  
-- **Брокер сообщений**: Kafka  
-- **LLM провайдер**: GigaChat API  
-- **Telegram API**: Java Telegram Bot API  
-- **Контейнеризация**: Docker, Docker Compose  
-- **Сборка**: Gradle (fat‑JAR)  
-- **Тестирование**: JUnit, Testcontainers  
+- **Язык**: Java 25
+- **Фреймворк**: Spring 7 (WebFlux, Data MongoDB Reactive, Modulith)
+- **База данных**: MongoDB
+- **Брокер сообщений**: Kafka
+- **LLM провайдер**: GigaChat API
+- **Telegram API**: Java Telegram Bot API
+- **Контейнеризация**: Docker, Docker Compose
+- **Сборка**: Gradle (fat‑JAR)
+- **Тестирование**: JUnit, Testcontainers
 
 ---
 
 ## 💡 Основные функции
 
-1. **Решение Google‑форм**  
-   - Приём ссылки на форму через `/solve`.  
-   - Генерация ответов через **GigaChat** (3 попытки, таймаут 30 сек).  
-   - Вывод ответов с уровнем уверенности (0–100%).  
+1. **Решение Google‑форм**
+   - Приём ссылки на форму через `/solve`.
+   - Генерация ответов через **GigaChat** (3 попытки, таймаут 30 сек).
+   - Вывод ответов с уровнем уверенности (0–100%).
 
-2. **История и управление формами**  
-   - `/history [day|week|month|all]` – история решений.  
-   - `/myforms` – список сохранённых форм.  
-   - `/get_form <id>` – просмотр ответов сохранённой формы.  
-   - `/remove_form <id>` – удаление формы.  
-   - `/rescore <id>` – повторное решение формы.  
+2. **История и управление формами**
+   - `/history [day|week|month|all]` – история решений.
+   - `/myforms` – список сохранённых форм.
+   - `/get_form <id>` – просмотр ответов сохранённой формы.
+   - `/remove_form <id>` – удаление формы.
+   - `/rescore <id>` – повторное решение формы.
 
-3. **Статус запросов**  
-   - `/status <requestId>` – проверка состояния обработки (Ожидает, В обработке, Завершен, Неудача).  
+3. **Статус запросов**
+   - `/status <requestId>` – проверка состояния обработки (Ожидает, В обработке, Завершен, Неудача).
 
-4. **Администрирование**  
-   - `/healthcheck` – статус сервера + список авторов (без авторизации).  
-   - `/auth` (POST) – получить API‑ключ для доступа к `/users`.  
-   - `/users` (GET) – список всех пользователей (только для админов). 
+4. **Администрирование**
+   -  `http://localhost:8080/healthcheck` – статус сервера + список авторов (без авторизации).
+   - `http://localhost:8080/auth?login=…&pass=…` – получить API‑ключ для доступа к `/users` (живёт 15 минут).
+   - `http://localhost:8080/users?key=…` – список всех пользователей (только при валидном API‑ключе).
 
 ---
 
 ## ⚙️ Требования к окружению
 
 - **Docker** 20.10+ и **Docker Compose** 2.20+
-- **Gradle** 8.10+ (для локальной сборки)
-- **Java 25** (если запуск без контейнера)
+- **Java 25** и **Gradle Wrapper** (`gradlew.bat`/`gradlew`) — нужен для пересборки jar.
 
 ---
 
@@ -69,49 +67,104 @@ Telegram‑бот для автоматического решения Google‑
 Создайте в корне проекта файл **`.env`**:
 
 ```env
+# Профиль Spring (mongo — реальная БД, stub — заглушки)
+SPRING_PROFILES_ACTIVE=mongo
+
 # Telegram Bot
 TELEGRAM_BOT_TOKEN=ваш_токен_от_BotFather
-TELEGRAM_BOT_USERNAME=QuizSolverBot 
+TELEGRAM_BOT_USERNAME=QuizSolverBot
 
-# GigaChat API
+# GigaChat API (Base64-ключ из личного кабинета Sber)
 GIGACHAT_API_KEY=ваш_base64_ключ
 
-# Kafka
+# Kafka (хост — имя сервиса в docker-compose)
 KAFKA_BOOTSTRAP_SERVERS=kafka:9092
 
-# MongoDB
-MONGODB_URI=mongodb://mongo:27017
+# MongoDB (хост — имя сервиса в docker-compose)
+MONGODB_URI=mongodb://mongodb:27017/quiz_bot
 MONGODB_DATABASE=quiz_bot
 
-# JWT для endpoint /auth
+# Секрет для администрирования
 JWT_SECRET=случайная_длинная_строка
 
+# Порт, на который пробросится приложение
+APP_PORT=8080
+```
+
+> Без `SPRING_PROFILES_ACTIVE=mongo` контекст не поднимется: реализации `HistoryService`/`RequestStatusService`/`FormStorageService` активируются именно под этим профилем.
+
+---
+
+## 🚀 Запуск через Docker
+
+Убедитесь, что файл `.env` создан и Docker Desktop запущен.
+
+#### 1. Сборка fat‑jar (gradlew)
+
+```powershell
+.\gradlew.bat :app:shadowJar --no-daemon
+```
+
+Артефакт окажется в `app/build/libs/app.jar`.
+
+#### 2. Сборка docker‑образа и запуск всех сервисов (app + Kafka + MongoDB)
+
+```powershell
+docker compose up --build -d
+```
+
+Если в коде ничего не менялось и образ уже свежий — можно просто:
+
+```powershell
+docker compose up -d
+```
+
+#### 3. Проверка логов
+
+```powershell
+docker compose logs -f app
+# выйти — Ctrl+C
+```
+
+
+#### 4. Остановка
+
+```powershell
+docker compose down            # остановить + удалить контейнеры (Mongo volume сохранится)
+docker compose down -v         # ... + снести Mongo volume (чистая БД)
 ```
 
 ---
 
-## 🚀 Запуск приложения
+## 🖥 Локальный запуск
 
-Убедитесь, что файл .env создан.
+#### 1. Поднимите только инфраструктуру (Kafka + MongoDB)
 
-#### 1. Сборка и запуск всех сервисов.
-
-```bash
-docker compose up --build -d
+```powershell
+docker compose up -d kafka mongodb
 ```
 
-#### 2. Проверка логов.
+#### 2. Установите переменные окружения для приложения
 
-```bash
-docker logs -f app
+В PowerShell для текущей сессии (хосты — `localhost`, потому что приложение бежит вне docker‑сети):
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE = "mongo"
+$env:TELEGRAM_BOT_TOKEN     = "ваш_токен"
+$env:TELEGRAM_BOT_USERNAME  = "QuizSolverBot"
+$env:GIGACHAT_API_KEY       = "ваш_base64_ключ"
+$env:JWT_SECRET             = "случайная_длинная_строка"
+$env:KAFKA_BOOTSTRAP_SERVERS = "localhost:9092"
+$env:MONGODB_URI             = "mongodb://localhost:27017/quiz_bot"
 ```
 
+#### 3. Соберите jar и запустите
 
-#### 3. Остановка.
-
-```bash
-docker compose down
+```powershell
+.\gradlew.bat :app:shadowJar --no-daemon
+java -jar app\build\libs\app.jar
 ```
+
 ---
 
 ## 🖼 Пример взаимодействия с ботом
@@ -155,15 +208,13 @@ docker compose down
 
 
 
-
-
 ## 🔌 HTTP эндпоинты (администрирование)
 
 - http://localhost:8080/healthcheck
 
 <img width="469" height="427" alt="image" src="https://github.com/user-attachments/assets/2fae2200-3938-490a-b3f7-41593b1f79f5" />
 
-- http://localhost:8080/auth?login=admin&pass=admin123
+- http://localhost:8080/auth?login=...&pass=...
 
 <img width="675" height="86" alt="image" src="https://github.com/user-attachments/assets/24d937c2-e11c-4d5e-8d50-6b41331b196b" />
 
@@ -171,21 +222,21 @@ docker compose down
 
 <img width="478" height="698" alt="image" src="https://github.com/user-attachments/assets/ff25cec1-fd34-4c40-bedd-c6dd06b0bffc" />
 
+> API‑ключ из `/auth` действителен **15 минут**. По истечении — `/users` вернёт `401`, нужно получить новый ключ.
 
+---
 
 ## 📁 Структура проекта (основные модули)
 
-- messagehandler – обработка команд Telegram, маршрутизация.
-
-- formsolving – парсинг Google Forms, отправка задач в Kafka.
-
-- llmsolver – интеграция с GigaChat, генерация ответов и уверенности.
-
-- database – работа с MongoDB (сохранение форм, истории).
-
-- adminauth – авторизация администраторов, JWT‑токены.
-
-- requeststatus – управление статусами запросов.
+- **messagehandler** – обработка команд Telegram, маршрутизация.
+- **formsolving** – парсинг Google Forms, отправка задач в Kafka.
+- **llmsolver** – интеграция с GigaChat, генерация ответов и уверенности.
+- **database** – работа с MongoDB (сохранение форм, истории).
+- **adminauth** – авторизация администраторов, выдача и проверка API‑ключей.
+- **listusers** – endpoint `/users` со списком всех пользователей.
+- **requeststatus** – управление статусами запросов.
+- **history** – история решённых форм.
+- **healthcheck** – endpoint `/healthcheck`.
 
 
 ---
@@ -199,4 +250,3 @@ docker compose down
 
 
 <img width="1000" height="150" alt="698763d33117f393221d99de00f2b0412399c772685102f76a580d7bebf9791c" src="https://github.com/user-attachments/assets/228811c2-336e-4b0d-ab62-5c6b9e9b9ceb" />
-
