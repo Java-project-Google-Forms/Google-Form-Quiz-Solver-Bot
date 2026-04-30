@@ -42,6 +42,8 @@ dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.parameter.names)
+    // SpringDoc
+    //implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.5.0")
 
     // Logging
     implementation(libs.slf4j.api)
