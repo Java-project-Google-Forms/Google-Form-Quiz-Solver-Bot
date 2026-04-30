@@ -10,6 +10,17 @@ import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
 
+/**
+ * Конфигурация LLM-слоя. Все значения читаются из
+ * {@code application.properties} / переменных окружения с разумными
+ * дефолтами (см. {@code @Value(":default")}).
+ *
+ * <p>Также экспортирует {@link #insecureHttpClient()} — Reactor Netty
+ * {@link HttpClient} с отключённой валидацией TLS-сертификатов
+ * (нужно для общения с {@code ngw.devices.sberbank.ru} из
+ * закрытых сетей, где может не быть нужного корневого сертификата).
+ * Для прода стоит заменить на нормальный truststore.
+ */
 @Configuration
 @Getter
 public class LlmConfig {
@@ -29,6 +40,11 @@ public class LlmConfig {
     @Value("${gigachat.max-attempts:3}")
     private int maxAttempts;
 
+    /**
+     * Reactor Netty HTTP-клиент с отключённой проверкой TLS-сертификатов.
+     * Используется в {@link ru.spbstu.llmsolver.client.GigaChatClient} и
+     * {@link ru.spbstu.llmsolver.client.TokenProvider}.
+     */
     @Bean
     public HttpClient insecureHttpClient() {
         try {

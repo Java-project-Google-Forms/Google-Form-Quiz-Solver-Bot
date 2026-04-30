@@ -5,9 +5,28 @@ import ru.spbstu.llmsolver.service.LLMQuestionSolver.Question;
 
 import java.util.List;
 
+/**
+ * Собирает текстовый prompt, который отправляется в GigaChat. Prompt
+ * жёстко требует ответ в JSON-формате
+ * {@code { "1": { "answer": …, "confidence": … }, "2": {…}, … }}, чтобы
+ * {@link ru.spbstu.llmsolver.parser.AnswerParser} мог его распарсить.
+ *
+ * <p>В prompt'е также прописаны инструкции:
+ * <ul>
+ *   <li>На вопросы про личные данные — отвечать маркером {@code __PERSONAL__}
+ *       (парсер заменит на дружелюбный текст с {@code confidence=0}).</li>
+ *   <li>На вопросы про текущую дату/время — отвечать маркером {@code UNKNOWN}.</li>
+ *   <li>На все остальные — давать конкретный ответ.</li>
+ * </ul>
+ */
 @Component
 public class PromptBuilder {
 
+    /**
+     * Возвращает готовый prompt для переданного набора вопросов. Вопросы
+     * нумеруются с 1; если у вопроса есть варианты ответа — они
+     * перечисляются в скобках.
+     */
     public String buildPrompt(List<Question> questions) {
         StringBuilder sb = new StringBuilder();
         sb.append("Ты — полезный ассистент, отвечающий на вопросы викторины или формы. Твоя задача — дать точный и полезный ответ на каждый вопрос.\n");
