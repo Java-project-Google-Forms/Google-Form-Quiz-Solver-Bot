@@ -69,8 +69,12 @@ public class QuizTelegramBot extends TelegramLongPollingBot {
                 long chatId = update.getMessage().getChatId();
                 try {
                     SendMessage response = messageHandler.handle(update.getMessage());
-                    execute(response);
-                    log.debug("Reply sent to chat {}", chatId);
+                    if (response != null) {
+                        execute(response);
+                        log.debug("Reply sent to chat {}", chatId);
+                    } else {
+                        log.debug("No response sent for chat {} (handler returned null)", chatId);
+                    }
                 } catch (TelegramApiException e) {
                     log.error("Failed to send message to chat {}", chatId, e);
                     try {

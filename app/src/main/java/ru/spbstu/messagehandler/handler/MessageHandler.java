@@ -85,6 +85,9 @@ public class MessageHandler {
                 }
 
         }
+        if (responseText == null || responseText.isBlank()) {
+            return null; 
+        }
 
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId.toString());
