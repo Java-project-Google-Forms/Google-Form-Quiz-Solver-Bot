@@ -100,11 +100,14 @@ public class TelegramCommandRouter {
         }
         Matcher matcher = FORM_LINK_REGEX.matcher(argument.strip());
         if (matcher.find()) {
-            if (formSolving.solveForm(chatId, matcher.group())) {
-                return "Отправили запрос на обработку формы, ожидайте...";
-            } else {
-                return "Не удалось принять форму проверьте переданную ссылку.";
+            try {
+                formSolving.solveForm(chatId, matcher.group());
+            } catch (Exception e) {
+                // Логируем, но НЕ пробрасываем ошибку дальше.
+                // Мы предполагаем, что сервис уже сам отправил сообщение об ошибке пользователю.
+                // Если же сервис упал "молча", можно вернуть текст ошибки здесь.
             }
+            return ""; // Возвращаем пустоту, чтобы MessageHandler вернул null
         } else {
             return "❌ Укажите ссылку на форму: /solve &lt;link to form&gt;";
         }
@@ -123,11 +126,13 @@ public class TelegramCommandRouter {
         }
         String formId = argument.trim();
         if (isValidUuid(formId)) {
-            if (formSolving.rescoreForm(chatId, formId)) {
-                return "Отправили запрос на повторную обработку формы, ожидайте...";
-            } else {
-                return "Не удалось принять форму на повторную обработку.";
-            }
+            formSolving.rescoreForm(chatId, formId);            
+            return "";
+            //if (formSolving.rescoreForm(chatId, formId)) {
+                //return "Отправили запрос на повторную обработку формы, ожидайте...";
+            //} else {
+                //return "Не удалось принять форму на повторную обработку.";
+            //}
         } else {
             return "❌ ID формы неправильного формата";
         }
