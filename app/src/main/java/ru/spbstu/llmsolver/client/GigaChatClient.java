@@ -1,7 +1,6 @@
 package ru.spbstu.llmsolver.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -18,13 +17,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.LongConsumer;
 
+/**
+ * Реализация {@link LanguageModelClient} поверх Sber GigaChat REST API.
+ *
+ * <p>Делает POST на {@code /chat/completions} с моделью {@code GigaChat},
+ * предварительно получая Bearer-токен через {@link TokenProvider}.
+ * Каждый запрос ограничен тайм-аутом из {@link LlmConfig#getTimeoutSeconds()}
+ * и имеет до {@link LlmConfig#getMaxAttempts()} попыток с экспоненциальной
+ * паузой (1с → 10с). На каждую попытку дёргается callback {@code onRetry}
+ * — это используется наверху ({@link ru.spbstu.llmsolver.LlmSolver}) для
+ * логирования/уведомления.
+ */
 @Slf4j
 @Component
 public class GigaChatClient implements LanguageModelClient {
     private final WebClient chatWebClient;
     private final TokenProvider tokenProvider;
     private final Duration timeout;
-    @Getter
     private final int maxAttempts;
 
     public GigaChatClient(LlmConfig config, TokenProvider tokenProvider, HttpClient httpClient) {
@@ -39,6 +48,14 @@ public class GigaChatClient implements LanguageModelClient {
                 .build();
     }
 
+    /**
+     * Максимальное число попыток LLM-запроса (используется наверху для
+     * формирования сообщений вида «Попытка N/M…»).
+     */
+    public int getMaxAttempts() {
+        return maxAttempts;
+    }
+
     @Override
     public Mono<String> ask(String prompt) {
         return ask(prompt, attempt -> {});
@@ -50,10 +67,21 @@ public class GigaChatClient implements LanguageModelClient {
                 .flatMap(token -> sendChatRequest(prompt, token))
                 .retryWhen(Retry.backoff(maxAttempts, Duration.ofSeconds(1))
                         .maxBackoff(Duration.ofSeconds(10))
-                        .doBeforeRetry(rs -> onRetry.accept(rs.totalRetries() + 1)))
-                .onErrorMap(e -> new RuntimeException("LLM request failed after " + maxAttempts + " attempts", e));
+                        .doBeforeRetry(rs -> {
+                            long attempt = rs.totalRetries() + 1;
+                            log.warn("LLM attempt {}/{} failed: {}", attempt, maxAttempts,
+                                    rs.failure().getMessage());
+                            onRetry.accept(attempt);
+                        }))
+                .onErrorMap(e -> new RuntimeException(
+                        "LLM request failed after " + maxAttempts + " attempts", e));
     }
 
+    /**
+     * Один сетевой запрос к {@code /chat/completions}. Без ретраев —
+     * ретраи навешиваются снаружи в {@link #ask(String, LongConsumer)}.
+     * Возвращает текст из {@code choices[0].message.content}.
+     */
     private Mono<String> sendChatRequest(String prompt, String token) {
         Map<String, Object> requestBody = Map.of(
                 "model", "GigaChat",
