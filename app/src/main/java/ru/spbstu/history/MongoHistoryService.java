@@ -10,6 +10,8 @@ import ru.spbstu.database.repository.FormRepository;
 import ru.spbstu.database.repository.UserRepository;
 import ru.spbstu.messagehandler.service.api.HistoryService;
 
+import java.util.stream.Collectors;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
