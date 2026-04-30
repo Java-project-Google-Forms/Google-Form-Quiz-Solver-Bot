@@ -4,6 +4,7 @@ import ru.spbstu.database.document.FormDocument;
 import ru.spbstu.formsolving.model.FormStructure;
 
 public interface FormStorageService {
+    boolean hasActiveRequest(Long chatId);
     // Сохранить решённую форму и обновить историю пользователя
     void saveForm(Long chatId, FormDocument form);
     // Обновить статус запроса

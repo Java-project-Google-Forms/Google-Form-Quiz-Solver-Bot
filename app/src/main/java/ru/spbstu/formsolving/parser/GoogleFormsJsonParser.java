@@ -59,18 +59,29 @@ public class GoogleFormsJsonParser {
         throw new RuntimeException("FB_PUBLIC_LOAD_DATA_ not found. Form may not be public.");
     }
 
+    private String truncate(String text) {
+    if (text == null) return null;
+    if (text.length() <= 500) return text;
+    return text.substring(0, 500) + "<<...>>";
+    }
+
     private FormStructure parseFormStructure(JsonNode root, String title) {
         JsonNode questionsArray = root.path(1).path(1);
         if (questionsArray.isMissingNode() || !questionsArray.isArray()) {
             throw new RuntimeException("Invalid form structure");
         }
-        String description = root.path(1).path(0).asText();
+        if (questionsArray.size() > 50) {
+        throw new RuntimeException("Форма содержит более 50 вопросов. Такие формы не обрабатываются.");
+        }
+
+        String description = truncate(root.path(1).path(0).asText());
+
         List<Question> questions = new ArrayList<>();
         for (JsonNode qNode : questionsArray) {
             parseQuestion(qNode).ifPresent(questions::add);
         }
 
-        return new FormStructure(title, description, questions);
+        return new FormStructure(truncate(title), description, questions);
     }
 
     private Optional<Question> parseQuestion(JsonNode qNode) {
@@ -78,8 +89,8 @@ public class GoogleFormsJsonParser {
         if (typeCode == -1) return Optional.empty();
 
         Question q = new Question();
-        q.setTitle(qNode.path(1).asText());
-        q.setDescription(qNode.path(2).asText());
+        q.setTitle(truncate(qNode.path(1).asText()));
+        q.setDescription(truncate(qNode.path(2).asText()));
         q.setType(mapTypeCode(typeCode));
         q.setRequired(extractRequired(qNode));
 
@@ -254,4 +265,8 @@ public class GoogleFormsJsonParser {
         return structure.getQuestions().stream()
                 .noneMatch(q -> q.getType() != QuestionType.UNSUPPORTED);
     }
+
+    
+
+
 }

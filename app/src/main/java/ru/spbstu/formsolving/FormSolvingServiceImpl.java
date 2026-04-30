@@ -82,6 +82,10 @@ public class FormSolvingServiceImpl implements FormSolvingService, FormSolvingPr
     @Override
     public boolean solveForm(Long chatId, String link) {
         try {
+            if (storageService.hasActiveRequest(chatId)) {
+            resultSender.sendResult(chatId, "❌ У вас уже есть активный запрос. Пожалуйста, дождитесь его завершения перед отправкой новой формы.");
+            return false;
+            }
             FormStructure structure = parser.parse(link);
             if (parser.isNotValid(structure)) {
                 resultSender.sendResult(chatId, "❌ Форма содержит неподдерживаемые типы вопросов или не содержит вопросов.");

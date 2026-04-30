@@ -25,6 +25,17 @@ public class MongoFormStorageService implements FormStorageService {
     private final UserRepository userRepository;
     private final RequestStatusRepository requestStatusRepository;
 
+
+    @Override
+    public boolean hasActiveRequest(Long chatId) {
+        return userRepository.findByChatId(chatId.toString())
+                .map(user -> {
+                    return user.isHasCurrentRequest(); 
+                })
+                .defaultIfEmpty(false) 
+                .block();
+    }
+
     @Override
     public void saveForm(Long chatId, FormDocument form) {
         userRepository.findByChatId(chatId.toString())
