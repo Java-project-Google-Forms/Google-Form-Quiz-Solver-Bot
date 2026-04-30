@@ -8,6 +8,15 @@ import ru.spbstu.llmsolver.service.LLMQuestionSolver;
 
 import java.util.List;
 
+/**
+ * Standalone-runner для отладки LLM-слоя без поднятия всего приложения.
+ * Поднимает только модуль {@code ru.spbstu.llmsolver} (без Kafka, без бота,
+ * без Mongo), отправляет в GigaChat подготовленный набор вопросов разных
+ * типов и печатает в консоль ответы и сводную статистику.
+ *
+ * <p>Запуск: gradle-таск {@code :app:runLlmTest} (см. {@code build.gradle.kts}).
+ * В CI и продакшне НЕ используется.
+ */
 @Configuration
 @ComponentScan("ru.spbstu.llmsolver")
 @PropertySource("classpath:application.properties")

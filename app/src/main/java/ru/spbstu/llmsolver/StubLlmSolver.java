@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import ru.spbstu.formsolving.model.FormStructure;
@@ -16,7 +17,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Заглушка для LLM-решателя на этапе разработки/тестов: вместо реального
+ * запроса к GigaChat подставляет первый вариант ответа (для choice-типов)
+ * или строку «Заглушка (текстовый ответ)» (для текстовых) — и через 3 секунды
+ * имитированной задержки шлёт результат.
+ *
+ * <p>Активируется только под профилем {@code stub-llm}. Под обычным
+ * профилем (например, {@code mongo}) эта заглушка НЕ регистрируется
+ * как бин — иначе её {@code @KafkaListener} попал бы в ту же
+ * consumer-group {@code llm-solver-group}, что и у {@link LlmSolver},
+ * и Kafka раздавала бы сообщения между двумя listener'ами 50/50.
+ */
 @Component
+@Profile("stub-llm")
 public class StubLlmSolver {
 
     private static final Logger log = LoggerFactory.getLogger(StubLlmSolver.class);

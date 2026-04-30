@@ -15,6 +15,15 @@ import ru.spbstu.llmsolver.config.LlmConfig;
 import java.time.Duration;
 import java.util.UUID;
 
+/**
+ * Получает временный OAuth Bearer-токен для GigaChat через
+ * {@code POST /oauth} (Basic-авторизация постоянным API-ключом из
+ * {@link LlmConfig#getApiKey()}).
+ *
+ * <p>Каждый запрос — отдельный HTTP-вызов; кэширования токена сейчас
+ * нет (на каждый чат-запрос — новый токен). Если {@code /oauth} вернёт
+ * ошибку, до 2 раз будет ретрай с экспоненциальной паузой.
+ */
 @Slf4j
 @Component
 public class TokenProvider {
@@ -30,6 +39,11 @@ public class TokenProvider {
                 .build();
     }
 
+    /**
+     * Возвращает свежий access-token. {@link RuntimeException} — если за все
+     * попытки токен получить не удалось (обычно — невалидный {@code apiKey}
+     * или сетевые проблемы).
+     */
     public Mono<String> getAccessToken() {
         return tokenWebClient.post()
                 .uri("/oauth")
